@@ -1,0 +1,105 @@
+@startuml cozybooks
+left to right direction
+
+' Configuración de estilos para mejor visualización
+skinparam packageStyle rectangle
+skinparam package {
+  BackgroundColor WhiteSmoke
+  BorderColor Transparent
+  FontStyle bold
+}
+
+skinparam rectangle {
+  BackgroundColor WhiteSmoke
+  BorderColor Transparent
+  FontStyle bold
+  FontSize 14
+}
+
+' Configuración para casos de uso con borde negro
+skinparam usecase {
+  BorderColor Black
+}
+
+' Configuración para líneas del actor en negro
+skinparam actorStyle awesome
+skinparam actor {
+  BorderColor Black
+  BackgroundColor White
+}
+skinparam ArrowColor Black
+
+actor "Empleado\nCozy Books" as Usuario
+
+rectangle "Sistema de Gestión de Ventas - Cozy Books" {
+  
+  package "Gestión de Autores" #PeachPuff {
+    usecase "Registrar Autor" as UC01
+    usecase "Actualizar Autor" as UC02
+    usecase "Eliminar Autor" as UC03
+    usecase "Listar Autores" as UC04
+    usecase "Buscar Autor" as UC05
+    usecase "Reporte de Libros\npor Autor" as UC22
+  }
+  
+  package "Gestión de Clientes" #LightSkyBlue {
+    usecase "Registrar Cliente" as UC06
+    usecase "Actualizar Cliente" as UC07
+    usecase "Eliminar Cliente" as UC08
+    usecase "Listar Clientes" as UC09
+    usecase "Buscar Cliente" as UC10
+  }
+  
+  package "Gestión de Libros" #Plum {
+    usecase "Registrar Libro" as UC11
+    usecase "Actualizar Libro" as UC12
+    usecase "Eliminar Libro" as UC13
+    usecase "Listar Libros" as UC14
+    usecase "Buscar Libro" as UC15
+  }
+  
+  package "Gestión de Ventas" #LightYellow {
+    usecase "Registrar Venta" as UC16
+    usecase "Actualizar Venta" as UC17
+    usecase "Eliminar Venta" as UC18
+    usecase "Listar Ventas" as UC19
+    usecase "Buscar Venta" as UC20
+    usecase "Generar Ticket" as UC21
+  }
+}
+
+' Relaciones del Actor con Casos de Uso
+Usuario --> UC01
+Usuario --> UC02
+Usuario --> UC03
+Usuario --> UC04
+Usuario --> UC05
+Usuario --> UC22
+
+Usuario --> UC06
+Usuario --> UC07
+Usuario --> UC08
+Usuario --> UC09
+Usuario --> UC10
+
+Usuario --> UC11
+Usuario --> UC12
+Usuario --> UC13
+Usuario --> UC14
+Usuario --> UC15
+
+Usuario --> UC16
+Usuario --> UC17
+Usuario --> UC18
+Usuario --> UC19
+Usuario --> UC20
+
+' Relaciones de Inclusión
+UC16 ..> UC21 : <<include>>
+UC09 ..> UC15 : <<include>>
+
+' Relaciones de Extensión
+UC22 ..> UC15 : <<extend>>
+
+@enduml
+

@@ -1,0 +1,195 @@
+@startuml erdcozybooks
+' Diagrama Entidad-Relación - Sistema Cozy Books
+title Diagrama Entidad-Relación (ERD) - Sistema de Gestión de Ventas Cozy Books
+
+' Configuración de estilos
+skinparam linetype ortho
+skinparam roundcorner 10
+
+entity "AUTOR" as autor {
+  * **id_autor** : INT <<PK>>
+  --
+  * nombre : VARCHAR(100)
+  * fecha_nacimiento : DATE
+  nacionalidad : VARCHAR(50)
+  biografia : TEXT
+}
+
+entity "CLIENTE" as cliente {
+  * **id_cliente** : INT <<PK>>
+  --
+  * nombre : VARCHAR(100)
+  * documento : VARCHAR(8) <<UNIQUE>>
+  email : VARCHAR(100)
+  telefono : VARCHAR(20)
+  fecha_registro : TIMESTAMP
+}
+
+entity "LIBRO" as libro {
+  * **id_libro** : INT <<PK>>
+  --
+  * titulo : VARCHAR(200)
+  isbn : VARCHAR(20) <<UNIQUE>>
+  * editorial : VARCHAR(100)
+  * año : INT
+  * precio : DECIMAL(10,2)
+  genero : VARCHAR(50)
+  * tipo_libro : VARCHAR(20)
+  stock : INT
+  fecha_registro : TIMESTAMP
+  --
+  Campos FISICO (si tipo_libro = 'FISICO'):
+  encuadernado : VARCHAR(50)
+  num_edicion : INT
+  --
+  Campos DIGITAL (si tipo_libro = 'DIGITAL'):
+  extension : VARCHAR(10)
+  permisos_impresion : BOOLEAN
+  --
+  Campos AUDIOLIBRO (si tipo_libro = 'AUDIOLIBRO'):
+  duracion : INT
+  plataforma : VARCHAR(50)
+  narrador : VARCHAR(100)
+  --
+  * id_autor : INT <<FK>>
+}
+
+entity "VENTA" as venta {
+  * **id_venta** : INT <<PK>>
+  --
+  * fecha : TIMESTAMP
+  * monto : DECIMAL(10,2)
+  metodo_pago : VARCHAR(50)
+  estado : VARCHAR(20)
+  --
+  * id_cliente : INT <<FK>>
+}
+
+entity "DETALLE_VENTA" as detalle {
+  * **id_detalle** : INT <<PK>>
+  --
+  * cantidad : INT
+  * precio_unitario : DECIMAL(10,2)
+  * subtotal : DECIMAL(10,2)
+  --
+  * id_venta : INT <<FK>>
+  * id_libro : INT <<FK>>
+}
+
+' Relaciones
+
+' Autor escribe Libros (1:N)
+autor ||--o{ libro : "escribe"
+
+' Cliente realiza Ventas (1:N)
+cliente ||--o{ venta : "realiza"
+
+' Venta tiene Detalles (1:N)
+venta ||--o{ detalle : "contiene"
+
+' Detalle referencia Libro (N:1)
+libro ||--o{ detalle : "se vende en"
+
+' Notas explicativas
+note right of libro
+  **Tipo de Libro (obligatorio):**
+  - "FISICO"
+  - "DIGITAL"
+  - "AUDIOLIBRO"
+  
+  **Implementación:** Una sola tabla
+  con campos específicos que quedan
+  NULL según el tipo.
+  
+  Ejemplos:
+  - FISICO: encuadernado y num_edicion
+    tienen valor, resto NULL
+  - DIGITAL: extension y permisos_impresion
+    tienen valor, resto NULL
+  - AUDIOLIBRO: duracion, plataforma,
+    narrador tienen valor, resto NULL
+  
+  **Restricciones SQL:**
+  - precio > 0
+  - stock >= 0
+  - tipo_libro IN ('FISICO', 'DIGITAL', 'AUDIOLIBRO')
+  
+  **Stock:** Solo aplica para FISICO
+  **ISBN:** Identificador internacional (UNIQUE)
+end note
+
+note right of venta
+  **Monto:** Calculado automáticamente
+  sumando subtotales de DETALLE_VENTA
+  
+  **Restricciones SQL:**
+  - monto >= 0
+  - estado IN ('COMPLETADA', 'PENDIENTE', 'CANCELADA')
+  - metodo_pago IN ('EFECTIVO', 'TARJETA', 'TRANSFERENCIA')
+  
+  **Estado:** 
+  - "COMPLETADA" (default)
+  - "PENDIENTE" 
+  - "CANCELADA"
+  
+  **Método de Pago:**
+  - "EFECTIVO"
+  - "TARJETA"
+  - "TRANSFERENCIA"
+end note
+
+note left of detalle
+  Tabla intermedia que registra
+  qué libros se vendieron en
+  cada venta (relación N:M)
+  
+  **Restricciones SQL:**
+  - cantidad > 0
+  - precio_unitario > 0
+  - subtotal >= 0
+  
+  Guarda el precio al momento
+  de la venta (histórico)
+end note
+
+note left of autor
+  Los autores pueden escribir
+  múltiples libros de diferentes
+  tipos.
+  
+  **Restricciones SQL:**
+  - ON DELETE RESTRICT
+  - ON UPDATE CASCADE
+  
+  **Restricción:** No se puede
+  eliminar si tiene libros asociados
+end note
+
+note bottom of cliente
+  **Documento:** DNI de 8 dígitos
+  Validado en la aplicación (UNIQUE)
+  
+  **Restricciones SQL:**
+  - ON DELETE RESTRICT
+  - ON UPDATE CASCADE
+  - fecha_registro DEFAULT CURRENT_TIMESTAMP
+  
+  **Restricción:** No se puede
+  eliminar si tiene ventas registradas
+  
+  **Contacto:** Email y teléfono
+  opcionales para marketing
+end note
+
+note top of libro
+  **Restricciones SQL:**
+  - precio > 0
+  - stock >= 0 (default 0)
+  - tipo_libro IN ('FISICO', 'DIGITAL', 'AUDIOLIBRO')
+  - fecha_registro DEFAULT CURRENT_TIMESTAMP
+  - ON DELETE RESTRICT (si está en DETALLE_VENTA)
+  - ON UPDATE CASCADE
+end note
+
+@enduml
+

@@ -1,0 +1,59 @@
+@startuml
+title Diagrama de Secuencia - CU11: Registrar Libro
+
+actor "Usuario" as Usuario
+participant "Interfaz" as Interfaz
+participant "ShopController" as Controller
+participant "LibroRepository" as Repository
+participant "AutorRepository" as AutorRepo
+database "Database" as DB
+
+Usuario -> Interfaz : Ingresar datos del libro\n(titulo, isbn, editorial, año, precio,\ngenero, stock, idAutor, tipo_libro,\n+ campos específicos según tipo)
+activate Interfaz
+
+Interfaz -> Controller : registrarLibro(datosLibro)
+activate Controller
+
+' Validar que existe el autor
+Controller -> AutorRepo : obtenerAutor(idAutor)
+activate AutorRepo
+
+AutorRepo -> DB : SELECT FROM AUTOR
+activate DB
+DB --> AutorRepo : autor
+deactivate DB
+
+alt Autor no encontrado
+    AutorRepo --> Controller : null
+    Controller --> Interfaz : Error: "Autor no existe"
+    Interfaz --> Usuario : Mensaje de error
+    deactivate Controller
+    deactivate Interfaz
+else Autor encontrado
+    AutorRepo --> Controller : autor
+    deactivate AutorRepo
+    
+    ' Validar datos del libro
+    Controller -> Controller : validarDatosLibro(datos)\n- precio > 0\n- stock >= 0\n- ISBN único\n- tipo_libro obligatorio
+    
+    ' Insertar en tabla LIBRO con todos los campos
+    Controller -> Repository : crearLibro(todosLosDatos)
+    activate Repository
+    
+    Repository -> DB : INSERT INTO LIBRO\n(campos comunes + campos específicos según tipo)
+    activate DB
+    DB --> Repository : id_libro
+    deactivate DB
+    
+    Repository --> Controller : libro creado
+    deactivate Repository
+    
+    Controller --> Interfaz : Libro registrado exitosamente\n(id: id_libro)
+    deactivate Controller
+    
+    Interfaz --> Usuario : Mensaje de éxito
+    deactivate Interfaz
+end
+
+@enduml
+

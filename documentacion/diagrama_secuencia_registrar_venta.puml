@@ -1,0 +1,117 @@
+@startuml
+title Diagrama de Secuencia - CU16: Registrar Venta
+
+actor "Usuario" as Usuario
+participant "Interfaz" as Interfaz
+participant "ShopController" as Controller
+participant "VentaRepository" as VentaRepo
+participant "ClienteRepository" as ClienteRepo
+participant "LibroRepository" as LibroRepo
+database "Database" as DB
+
+Usuario -> Interfaz : Seleccionar cliente y libros\npara la venta
+activate Interfaz
+
+' Validar que existe el cliente
+Interfaz -> Controller : iniciarVenta(idCliente)
+activate Controller
+
+Controller -> ClienteRepo : obtenerCliente(idCliente)
+activate ClienteRepo
+
+ClienteRepo -> DB : SELECT FROM CLIENTE
+activate DB
+DB --> ClienteRepo : cliente
+deactivate DB
+
+alt Cliente no encontrado
+    ClienteRepo --> Controller : null
+    Controller --> Interfaz : Error: "Cliente no existe"
+    Interfaz --> Usuario : Mensaje de error
+    deactivate Controller
+    deactivate Interfaz
+else Cliente encontrado
+    ClienteRepo --> Controller : cliente
+    deactivate ClienteRepo
+    
+    ' Usuario agrega libros a la venta (ciclo)
+    loop Para cada libro agregado
+        Usuario -> Interfaz : Agregar libro (idLibro, cantidad)
+        Interfaz -> Controller : agregarLibroAVenta(idLibro, cantidad)
+        
+        ' Validar que existe el libro
+        Controller -> LibroRepo : obtenerLibro(idLibro)
+        activate LibroRepo
+        
+        LibroRepo -> DB : SELECT FROM LIBRO
+        activate DB
+        DB --> LibroRepo : libro
+        deactivate DB
+        
+        alt Libro no encontrado
+            LibroRepo --> Controller : null
+            Controller --> Interfaz : Error: "Libro no existe"
+            Interfaz --> Usuario : Mensaje de error
+        else Libro encontrado y stock suficiente
+            LibroRepo --> Controller : libro
+            deactivate LibroRepo
+            
+            Controller -> Controller : validarStock(libro, cantidad)
+            
+            alt Stock insuficiente (solo FISICO)
+                Controller --> Interfaz : Error: "Stock insuficiente"
+                Interfaz --> Usuario : Mensaje de error
+            else Stock suficiente o tipo DIGITAL/AUDIOLIBRO
+                Controller -> Controller : agregarACarrito(libro, cantidad)
+                Controller --> Interfaz : Libro agregado al carrito
+                Interfaz --> Usuario : Confirmación
+            end
+        end
+    end
+    
+    ' Usuario confirma la venta
+    Usuario -> Interfaz : Confirmar venta\n(metodoPago)
+    Interfaz -> Controller : confirmarVenta(metodoPago)
+    
+    Controller -> Controller : calcularMontoTotal()
+    
+    ' Insertar la venta
+    Controller -> VentaRepo : crearVenta(idCliente, monto, metodoPago)
+    activate VentaRepo
+    
+    VentaRepo -> DB : INSERT INTO VENTA
+    activate DB
+    DB --> VentaRepo : id_venta
+    deactivate DB
+    
+    ' Insertar detalles de venta
+    loop Para cada libro en el carrito
+        VentaRepo -> DB : INSERT INTO DETALLE_VENTA
+        activate DB
+        DB --> VentaRepo : OK
+        deactivate DB
+        
+        ' Actualizar stock (solo para libros físicos)
+        alt Tipo libro = FISICO
+            VentaRepo -> DB : UPDATE LIBRO (stock)
+            activate DB
+            DB --> VentaRepo : OK
+            deactivate DB
+        end
+    end
+    
+    VentaRepo --> Controller : venta creada
+    deactivate VentaRepo
+    
+    ' Generar ticket (CU21 - include)
+    Controller -> Controller : generarTicket(id_venta)
+    
+    Controller --> Interfaz : Venta registrada exitosamente\n(id: id_venta, monto: total)
+    deactivate Controller
+    
+    Interfaz --> Usuario : Mensaje de éxito + ticket
+    deactivate Interfaz
+end
+
+@enduml
+

@@ -1,0 +1,232 @@
+@startuml clasescozybooks
+title Diagrama de Clases - Sistema de Gestión de Ventas Cozy Books
+
+' Estilos para mejor contraste
+skinparam packageStyle rectangle
+skinparam classBackgroundColor white
+skinparam classBorderColor #555555
+skinparam classFontColor black
+skinparam packageBackgroundColor white
+skinparam packageBorderColor #808080
+skinparam packageFontColor black
+skinparam arrowColor #555555
+
+' ==================== CAPA CONTROLLER ====================
+package "<<controller>>" {
+    
+    class ShopController {
+        - autorController: AutorController
+        - clienteController: ClienteController
+        - libroController: LibroController
+        - ventaController: VentaController
+        --
+        + menu(): void
+        + ejecutarOpcion(opcion: String): void
+    }
+    
+    class AutorController {
+        - autorRepository: AutorRepository
+        --
+        + registrarAutor(nombre: String, fechaNacimiento: String): Autor
+        + actualizarAutor(id: int, datos: Map): void
+        + eliminarAutor(id: int): void
+        + listarAutores(): List<Autor>
+        + buscarAutor(criterio: String): Autor
+        + obtenerAutor(id: int): Autor
+    }
+    
+    class ClienteController {
+        - clienteRepository: ClienteRepository
+        --
+        + registrarCliente(nombre: String, documento: String, email: String, telefono: String): Cliente
+        + actualizarCliente(id: int, datos: Map): void
+        + eliminarCliente(id: int): void
+        + listarClientes(): List<Cliente>
+        + buscarCliente(criterio: String): Cliente
+        + obtenerCliente(id: int): Cliente
+        + validarDocumento(documento: String): boolean
+    }
+    
+    class LibroController {
+        - libroRepository: LibroRepository
+        - autorRepository: AutorRepository
+        --
+        + registrarLibro(datosLibro: Map): Libro
+        + actualizarLibro(id: int, datos: Map): void
+        + eliminarLibro(id: int): void
+        + listarLibros(): List<Libro>
+        + buscarLibro(criterio: String): List<Libro>
+        + buscarPorTitulo(titulo: String): List<Libro>
+        + buscarPorAutor(idAutor: int): List<Libro>
+        + obtenerLibro(id: int): Libro
+        + actualizarStock(id: int, cantidad: int): void
+        + reporteLibrosPorAutor(idAutor: int): List<Libro>
+    }
+    
+    class VentaController {
+        - ventaRepository: VentaRepository
+        - clienteRepository: ClienteRepository
+        - libroRepository: LibroRepository
+        - archivoService: ArchivoService
+        --
+        + registrarVenta(idCliente: int, detalles: List, metodoPago: String): Venta
+        + actualizarVenta(id: int, datos: Map): void
+        + eliminarVenta(id: int): void
+        + listarVentas(): List<Venta>
+        + buscarVenta(criterio: String): List<Venta>
+        + obtenerVenta(id: int): Venta
+        + calcularTotal(detalles: List): double
+        + generarTicket(idVenta: int): void
+        + iniciarVenta(idCliente: int): Venta
+        + agregarLibroAVenta(idLibro: int, cantidad: int): void
+        + confirmarVenta(metodoPago: String): Venta
+    }
+}
+
+' ==================== CAPA REPOSITORY ====================
+package "<<repository>>" {
+    
+    class AutorRepository {
+        --
+        + registrar(autor: Autor): void
+        + actualizar(autor: Autor): void
+        + eliminar(id: int): void
+        + listar(): List<Autor>
+        + buscar(criterio: String): Autor
+    }
+    
+    class ClienteRepository {
+        --
+        + registrar(cliente: Cliente): void
+        + actualizar(cliente: Cliente): void
+        + eliminar(id: int): void
+        + listar(): List<Cliente>
+        + buscar(criterio: String): Cliente
+    }
+    
+    class LibroRepository {
+        --
+        + registrar(libro: Libro): void
+        + actualizar(libro: Libro): void
+        + eliminar(id: int): void
+        + listar(): List<Libro>
+        + buscar(criterio: String): List<Libro>
+    }
+    
+    class VentaRepository {
+        --
+        + registrar(venta: Venta): void
+        + actualizar(venta: Venta): void
+        + eliminar(id: int): void
+        + listar(): List<Venta>
+        + buscar(criterio: String): List<Venta>
+    }
+    
+    class DetalleVentaRepository {
+        --
+        + registrar(detalle: DetalleVenta): void
+        + eliminar(id: int): void
+        + listar(): List<DetalleVenta>
+        + buscar(idVenta: int): List<DetalleVenta>
+    }
+}
+
+' ==================== CAPA MODEL ====================
+package "<<model>>" {
+    
+    class Autor {
+        - id_autor: int <<PK>>
+        - nombre: String
+        - fecha_nacimiento: Date
+        - nacionalidad: String
+        - biografia: String
+    }
+    
+    class Cliente {
+        - id_cliente: int <<PK>>
+        - nombre: String
+        - documento: String <<UNIQUE>>
+        - email: String
+        - telefono: String
+        - fecha_registro: Timestamp
+    }
+    
+    class Libro {
+        - id_libro: int <<PK>>
+        - titulo: String
+        - isbn: String <<UNIQUE>>
+        - editorial: String
+        - año: int
+        - precio: Decimal
+        - genero: String
+        - tipo_libro: String
+        - stock: int
+        - fecha_registro: Timestamp
+        - id_autor: int <<FK>>
+        --
+        Campos FISICO:
+        - encuadernado: String
+        - num_edicion: int
+        --
+        Campos DIGITAL:
+        - extension: String
+        - permisos_impresion: Boolean
+        --
+        Campos AUDIOLIBRO:
+        - duracion: int
+        - plataforma: String
+        - narrador: String
+    }
+    
+    class Venta {
+        - id_venta: int <<PK>>
+        - fecha: Timestamp
+        - monto: Decimal
+        - metodo_pago: String
+        - estado: String
+        - id_cliente: int <<FK>>
+    }
+    
+    class DetalleVenta {
+        - id_detalle: int <<PK>>
+        - cantidad: int
+        - precio_unitario: Decimal
+        - subtotal: Decimal
+        - id_venta: int <<FK>>
+        - id_libro: int <<FK>>
+    }
+}
+
+' ==================== RELACIONES CONTROLLER - CONTROLLER ====================
+ShopController --> AutorController : uses
+ShopController --> ClienteController : uses
+ShopController --> LibroController : uses
+ShopController --> VentaController : uses
+
+' ==================== RELACIONES CONTROLLER - REPOSITORY ====================
+AutorController --> AutorRepository : uses
+ClienteController --> ClienteRepository : uses
+LibroController --> LibroRepository : uses
+LibroController --> AutorRepository : uses
+VentaController --> VentaRepository : uses
+VentaController --> DetalleVentaRepository : uses
+VentaController --> ClienteRepository : uses
+VentaController --> LibroRepository : uses
+VentaController --> ArchivoService : uses
+
+' ==================== RELACIONES REPOSITORY - MODEL ====================
+AutorRepository --> Autor : manages
+ClienteRepository --> Cliente : manages
+LibroRepository --> Libro : manages
+VentaRepository --> Venta : manages
+DetalleVentaRepository --> DetalleVenta : manages
+
+' ==================== RELACIONES ENTRE ENTIDADES (MODEL) ====================
+' Relaciones de base de datos
+Autor "1" -- "0..*" Libro : escribe
+Cliente "1" -- "0..*" Venta : realiza
+Venta "1" *-- "1..*" DetalleVenta : contiene
+DetalleVenta "0..*" -- "1" Libro : referencia
+
+@enduml
+

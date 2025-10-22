@@ -1,0 +1,208 @@
+@startuml
+title Diagrama de Implementación - Sistema de Gestión de Ventas Cozy Books
+
+' Estilos con fondo blanco y alto contraste
+skinparam componentStyle rectangle
+skinparam backgroundColor white
+skinparam component {
+    BackgroundColor white
+    BorderColor #555555
+    FontColor black
+}
+skinparam package {
+    BackgroundColor #f5f5f5
+    BorderColor #808080
+    FontColor black
+}
+skinparam node {
+    BackgroundColor white
+    BorderColor #555555
+    FontColor black
+}
+skinparam database {
+    BackgroundColor white
+    BorderColor #555555
+    FontColor black
+}
+skinparam arrow {
+    Color #555555
+}
+skinparam note {
+    BackgroundColor #fffacd
+    BorderColor #808080
+    FontColor black
+}
+skinparam actor {
+    BorderColor black
+    BackgroundColor white
+}
+
+actor "Usuario\n(Empleado)" as Usuario
+
+node "PC/Servidor\nAplicación Java" as PC {
+    
+    package "view" {
+        component "Interfaz Consola\n(Sistema de Gestión de Ventas)" as View {
+            [Menu Principal\n(Autores, Clientes, Libros, Ventas)] as MenuPrincipal
+            [Submenu Autores\n(Registrar, Mostrar)] as SubmenuAutores
+            [Submenu Clientes\n(Registrar, Mostrar)] as SubmenuClientes
+            [Submenu Libros\n(Registrar, Mostrar, Por Autor)] as SubmenuLibros
+            [Submenu Ventas\n(Registrar, Mostrar)] as SubmenuVentas
+        }
+    }
+    
+    package "controller" {
+        [AutorController] as AutorCtrl
+        [ClienteController] as ClienteCtrl
+        [LibroController] as LibroCtrl
+        [VentaController] as VentaCtrl
+    }
+    
+    package "repository" {
+        [AutorRepository] as AutorRepo
+        [ClienteRepository] as ClienteRepo
+        [LibroRepository] as LibroRepo
+        [VentaRepository] as VentaRepo
+        [DetalleVentaRepository] as DetalleRepo
+    }
+    
+    package "model" {
+        [Autor]
+        [Cliente]
+        [Libro]
+        [Venta]
+        [DetalleVenta]
+    }
+    
+    package "util" {
+        [DBConnection] as DBConn
+        [ArchivoService] as Archivo
+    }
+}
+
+node "MySQL\nBase de Datos" as MySQL {
+    database "cozy_books" as DB {
+        [tabla: AUTOR]
+        [tabla: CLIENTE]
+        [tabla: LIBRO]
+        [tabla: VENTA]
+        [tabla: DETALLE_VENTA]
+    }
+}
+
+node "Sistema de Archivos\nLocal" as FileSystem {
+    [tickets/\n(archivos .txt)]
+}
+
+' ============================================
+' RELACIONES VIEW - CONTROLLER
+' ============================================
+
+Usuario --> View : "interactúa"
+
+' ============================================
+' RELACIONES INTERNAS DE LA VIEW
+' ============================================
+
+MenuPrincipal --> SubmenuAutores : "opción 1"
+MenuPrincipal --> SubmenuClientes : "opción 2"
+MenuPrincipal --> SubmenuLibros : "opción 3"
+MenuPrincipal --> SubmenuVentas : "opción 4"
+
+' ============================================
+' RELACIONES SUBMENU - CONTROLLER
+' ============================================
+
+SubmenuAutores --> AutorCtrl : "delega operaciones"
+SubmenuClientes --> ClienteCtrl : "delega operaciones"
+SubmenuLibros --> LibroCtrl : "delega operaciones"
+SubmenuVentas --> VentaCtrl : "delega operaciones"
+
+' ============================================
+' RELACIONES CONTROLLER - CONTROLLER
+' ============================================
+' (No hay relaciones entre controladores)
+
+' ============================================
+' RELACIONES CONTROLLER - REPOSITORY
+' ============================================
+
+AutorCtrl --> AutorRepo : "usa"
+ClienteCtrl --> ClienteRepo : "usa"
+LibroCtrl --> LibroRepo : "usa"
+LibroCtrl --> AutorRepo : "valida"
+VentaCtrl --> VentaRepo : "usa"
+VentaCtrl --> DetalleRepo : "usa"
+VentaCtrl --> ClienteRepo : "valida"
+VentaCtrl --> LibroRepo : "valida"
+
+' ============================================
+' RELACIONES REPOSITORY - MODEL
+' ============================================
+
+AutorRepo --> Autor : "gestiona"
+ClienteRepo --> Cliente : "gestiona"
+LibroRepo --> Libro : "gestiona"
+VentaRepo --> Venta : "gestiona"
+DetalleRepo --> DetalleVenta : "gestiona"
+
+' ============================================
+' RELACIONES REPOSITORY - DATABASE
+' ============================================
+
+AutorRepo ..> DBConn : "usa conexión"
+ClienteRepo ..> DBConn : "usa conexión"
+LibroRepo ..> DBConn : "usa conexión"
+VentaRepo ..> DBConn : "usa conexión"
+DetalleRepo ..> DBConn : "usa conexión"
+
+DBConn --> DB : "JDBC\nConexión TCP/IP"
+
+AutorRepo ..> [tabla: AUTOR] : "CRUD"
+ClienteRepo ..> [tabla: CLIENTE] : "CRUD"
+LibroRepo ..> [tabla: LIBRO] : "CRUD"
+VentaRepo ..> [tabla: VENTA] : "CRUD"
+DetalleRepo ..> [tabla: DETALLE_VENTA] : "CRUD"
+
+' ============================================
+' RELACIONES CON SISTEMA DE ARCHIVOS
+' ============================================
+
+VentaCtrl --> Archivo : "usa"
+Archivo --> FileSystem : "escribe tickets\n(I/O File)"
+
+' ============================================
+' NOTAS EXPLICATIVAS
+' ============================================
+
+note right of PC
+  **Entorno de Ejecución:**
+  - Java SE 8 o superior
+  - JVM
+  - Consola/Terminal
+end note
+
+note right of MySQL
+  **Base de Datos:**
+  - MySQL 8.0+
+  - Puerto: 3306
+  - Usuario: root
+  - Schema: cozy_books
+end note
+
+note bottom of FileSystem
+  **Generación de Tickets:**
+  - Formato: .txt
+  - Ubicación: /tickets/
+  - Nombre: venta_[id]_[fecha].txt
+end note
+
+note top of View
+  **Interfaz de Usuario:**
+  - Menú interactivo por consola
+  - Scanner para entrada de datos
+  - System.out para salida
+end note
+
+@enduml
+
