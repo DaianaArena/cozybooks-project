@@ -1,12 +1,17 @@
-package com.cozybooks.controller;
+package com.cozybooks.view;
+
+import com.cozybooks.controller.AutorController;
+import com.cozybooks.controller.ClienteController;
+import com.cozybooks.controller.LibroController;
+import com.cozybooks.controller.VentaController;
 
 import java.util.Scanner;
 
 /**
- * Controlador principal de la aplicación Cozy Books
- * Maneja el menú principal y coordina las operaciones
+ * Vista principal de la aplicación Cozy Books
+ * Maneja los menús y submenús según el diagrama de implementación
  */
-public class ShopController {
+public class MenuView {
     private AutorController autorController;
     private ClienteController clienteController;
     private LibroController libroController;
@@ -14,7 +19,7 @@ public class ShopController {
     private Scanner scanner;
     private boolean ejecutando;
 
-    public ShopController() {
+    public MenuView() {
         this.autorController = new AutorController();
         this.clienteController = new ClienteController();
         this.libroController = new LibroController();

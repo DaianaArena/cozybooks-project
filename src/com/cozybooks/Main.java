@@ -1,6 +1,6 @@
 package com.cozybooks;
 
-import com.cozybooks.controller.ShopController;
+import com.cozybooks.view.MenuView;
 import com.cozybooks.util.DBConnection;
 
 /**
@@ -20,8 +20,8 @@ public class Main {
                 System.out.println("✓ Conexión a la base de datos establecida correctamente.");
                 
                 // Iniciar la aplicación
-                ShopController shopController = new ShopController();
-                shopController.iniciar();
+                MenuView menuView = new MenuView();
+                menuView.iniciar();
                 
             } else {
                 System.out.println("✗ Error: No se pudo establecer conexión con la base de datos.");
