@@ -27,12 +27,9 @@ cozybooks-project/
 │           ├── util/          # Utilidades
 │           └── Main.java      # Punto de entrada
 ├── lib/                       # Librerías externas
-├── bin/                       # Clases compiladas
 ├── tickets/                   # Tickets generados
 ├── sql/                       # Scripts de base de datos
 ├── documentacion/             # Documentación del proyecto
-├── compilar.ps1              # Script de compilación
-├── ejecutar.ps1              # Script de ejecución
 └── README_JAVA.md            # Este archivo
 ```
 
