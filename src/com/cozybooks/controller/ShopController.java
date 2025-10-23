@@ -44,37 +44,11 @@ public class ShopController {
      */
     private void mostrarMenuPrincipal() {
         System.out.println("\n=== MENÚ PRINCIPAL ===");
-        System.out.println("GESTIÓN DE AUTORES:");
-        System.out.println("1.  Registrar Autor");
-        System.out.println("2.  Actualizar Autor");
-        System.out.println("3.  Eliminar Autor");
-        System.out.println("4.  Listar Autores");
-        System.out.println("5.  Buscar Autor");
-        System.out.println("22. Reporte de Libros por Autor");
-        
-        System.out.println("\nGESTIÓN DE CLIENTES:");
-        System.out.println("6.  Registrar Cliente");
-        System.out.println("7.  Actualizar Cliente");
-        System.out.println("8.  Eliminar Cliente");
-        System.out.println("9.  Listar Clientes");
-        System.out.println("10. Buscar Cliente");
-        
-        System.out.println("\nGESTIÓN DE LIBROS:");
-        System.out.println("11. Registrar Libro");
-        System.out.println("12. Actualizar Libro");
-        System.out.println("13. Eliminar Libro");
-        System.out.println("14. Listar Libros");
-        System.out.println("15. Buscar Libro");
-        
-        System.out.println("\nGESTIÓN DE VENTAS:");
-        System.out.println("16. Registrar Venta");
-        System.out.println("17. Actualizar Venta");
-        System.out.println("18. Eliminar Venta");
-        System.out.println("19. Listar Ventas");
-        System.out.println("20. Buscar Venta");
-        System.out.println("21. Generar Ticket");
-        
-        System.out.println("\n0.  Salir");
+        System.out.println("1. Autores");
+        System.out.println("2. Clientes");
+        System.out.println("3. Libros");
+        System.out.println("4. Ventas");
+        System.out.println("0. Salir");
         System.out.print("\nSeleccione una opción: ");
     }
 
@@ -86,87 +60,21 @@ public class ShopController {
             int opcion = Integer.parseInt(scanner.nextLine().trim());
             
             switch (opcion) {
-                // Gestión de Autores
                 case 1:
-                    autorController.registrarAutor();
+                    mostrarSubmenuAutores();
                     break;
                 case 2:
-                    autorController.actualizarAutor();
+                    mostrarSubmenuClientes();
                     break;
                 case 3:
-                    autorController.eliminarAutor();
+                    mostrarSubmenuLibros();
                     break;
                 case 4:
-                    autorController.listarAutores();
+                    mostrarSubmenuVentas();
                     break;
-                case 5:
-                    autorController.buscarAutor();
-                    break;
-                case 22:
-                    autorController.reporteLibrosPorAutor();
-                    break;
-                
-                // Gestión de Clientes
-                case 6:
-                    clienteController.registrarCliente();
-                    break;
-                case 7:
-                    clienteController.actualizarCliente();
-                    break;
-                case 8:
-                    clienteController.eliminarCliente();
-                    break;
-                case 9:
-                    clienteController.listarClientes();
-                    break;
-                case 10:
-                    clienteController.buscarCliente();
-                    break;
-                
-                // Gestión de Libros
-                case 11:
-                    libroController.registrarLibro();
-                    break;
-                case 12:
-                    libroController.actualizarLibro();
-                    break;
-                case 13:
-                    libroController.eliminarLibro();
-                    break;
-                case 14:
-                    libroController.listarLibros();
-                    break;
-                case 15:
-                    libroController.buscarLibro();
-                    break;
-                
-                // Gestión de Ventas
-                case 16:
-                    ventaController.registrarVenta();
-                    break;
-                case 17:
-                    ventaController.actualizarVenta();
-                    break;
-                case 18:
-                    ventaController.eliminarVenta();
-                    break;
-                case 19:
-                    ventaController.listarVentas();
-                    break;
-                case 20:
-                    ventaController.buscarVenta();
-                    break;
-                case 21:
-                    System.out.print("ID de la venta para generar ticket: ");
-                    int idVenta = Integer.parseInt(scanner.nextLine().trim());
-                    ventaController.generarTicket(idVenta);
-                    break;
-                
-                // Salir
                 case 0:
                     ejecutando = false;
                     break;
-                
                 default:
                     System.out.println("Error: Opción inválida. Por favor, seleccione una opción válida.");
                     break;
@@ -181,6 +89,236 @@ public class ShopController {
             System.out.println("Error: Debe ingresar un número válido.");
         } catch (Exception e) {
             System.out.println("Error inesperado: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Muestra el submenú de Autores
+     */
+    private void mostrarSubmenuAutores() {
+        boolean continuar = true;
+        while (continuar) {
+            System.out.println("\n=== GESTIÓN DE AUTORES ===");
+            System.out.println("1. Registrar Autor");
+            System.out.println("2. Actualizar Autor");
+            System.out.println("3. Eliminar Autor");
+            System.out.println("4. Listar Autores");
+            System.out.println("5. Buscar Autor");
+            System.out.println("6. Reporte de Libros por Autor");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("\nSeleccione una opción: ");
+            
+            try {
+                int opcion = Integer.parseInt(scanner.nextLine().trim());
+                
+                switch (opcion) {
+                    case 1:
+                        autorController.registrarAutor();
+                        break;
+                    case 2:
+                        autorController.actualizarAutor();
+                        break;
+                    case 3:
+                        autorController.eliminarAutor();
+                        break;
+                    case 4:
+                        autorController.listarAutores();
+                        break;
+                    case 5:
+                        autorController.buscarAutor();
+                        break;
+                    case 6:
+                        autorController.reporteLibrosPorAutor();
+                        break;
+                    case 0:
+                        continuar = false;
+                        break;
+                    default:
+                        System.out.println("Error: Opción inválida.");
+                        break;
+                }
+                
+                if (continuar && opcion != 0) {
+                    System.out.println("\nPresione Enter para continuar...");
+                    scanner.nextLine();
+                }
+                
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Debe ingresar un número válido.");
+            } catch (Exception e) {
+                System.out.println("Error inesperado: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Muestra el submenú de Clientes
+     */
+    private void mostrarSubmenuClientes() {
+        boolean continuar = true;
+        while (continuar) {
+            System.out.println("\n=== GESTIÓN DE CLIENTES ===");
+            System.out.println("1. Registrar Cliente");
+            System.out.println("2. Actualizar Cliente");
+            System.out.println("3. Eliminar Cliente");
+            System.out.println("4. Listar Clientes");
+            System.out.println("5. Buscar Cliente");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("\nSeleccione una opción: ");
+            
+            try {
+                int opcion = Integer.parseInt(scanner.nextLine().trim());
+                
+                switch (opcion) {
+                    case 1:
+                        clienteController.registrarCliente();
+                        break;
+                    case 2:
+                        clienteController.actualizarCliente();
+                        break;
+                    case 3:
+                        clienteController.eliminarCliente();
+                        break;
+                    case 4:
+                        clienteController.listarClientes();
+                        break;
+                    case 5:
+                        clienteController.buscarCliente();
+                        break;
+                    case 0:
+                        continuar = false;
+                        break;
+                    default:
+                        System.out.println("Error: Opción inválida.");
+                        break;
+                }
+                
+                if (continuar && opcion != 0) {
+                    System.out.println("\nPresione Enter para continuar...");
+                    scanner.nextLine();
+                }
+                
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Debe ingresar un número válido.");
+            } catch (Exception e) {
+                System.out.println("Error inesperado: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Muestra el submenú de Libros
+     */
+    private void mostrarSubmenuLibros() {
+        boolean continuar = true;
+        while (continuar) {
+            System.out.println("\n=== GESTIÓN DE LIBROS ===");
+            System.out.println("1. Registrar Libro");
+            System.out.println("2. Actualizar Libro");
+            System.out.println("3. Eliminar Libro");
+            System.out.println("4. Listar Libros");
+            System.out.println("5. Buscar Libro");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("\nSeleccione una opción: ");
+            
+            try {
+                int opcion = Integer.parseInt(scanner.nextLine().trim());
+                
+                switch (opcion) {
+                    case 1:
+                        libroController.registrarLibro();
+                        break;
+                    case 2:
+                        libroController.actualizarLibro();
+                        break;
+                    case 3:
+                        libroController.eliminarLibro();
+                        break;
+                    case 4:
+                        libroController.listarLibros();
+                        break;
+                    case 5:
+                        libroController.buscarLibro();
+                        break;
+                    case 0:
+                        continuar = false;
+                        break;
+                    default:
+                        System.out.println("Error: Opción inválida.");
+                        break;
+                }
+                
+                if (continuar && opcion != 0) {
+                    System.out.println("\nPresione Enter para continuar...");
+                    scanner.nextLine();
+                }
+                
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Debe ingresar un número válido.");
+            } catch (Exception e) {
+                System.out.println("Error inesperado: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Muestra el submenú de Ventas
+     */
+    private void mostrarSubmenuVentas() {
+        boolean continuar = true;
+        while (continuar) {
+            System.out.println("\n=== GESTIÓN DE VENTAS ===");
+            System.out.println("1. Registrar Venta");
+            System.out.println("2. Actualizar Venta");
+            System.out.println("3. Eliminar Venta");
+            System.out.println("4. Listar Ventas");
+            System.out.println("5. Buscar Venta");
+            System.out.println("6. Generar Ticket");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("\nSeleccione una opción: ");
+            
+            try {
+                int opcion = Integer.parseInt(scanner.nextLine().trim());
+                
+                switch (opcion) {
+                    case 1:
+                        ventaController.registrarVenta();
+                        break;
+                    case 2:
+                        ventaController.actualizarVenta();
+                        break;
+                    case 3:
+                        ventaController.eliminarVenta();
+                        break;
+                    case 4:
+                        ventaController.listarVentas();
+                        break;
+                    case 5:
+                        ventaController.buscarVenta();
+                        break;
+                    case 6:
+                        System.out.print("ID de la venta para generar ticket: ");
+                        int idVenta = Integer.parseInt(scanner.nextLine().trim());
+                        ventaController.generarTicket(idVenta);
+                        break;
+                    case 0:
+                        continuar = false;
+                        break;
+                    default:
+                        System.out.println("Error: Opción inválida.");
+                        break;
+                }
+                
+                if (continuar && opcion != 0) {
+                    System.out.println("\nPresione Enter para continuar...");
+                    scanner.nextLine();
+                }
+                
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Debe ingresar un número válido.");
+            } catch (Exception e) {
+                System.out.println("Error inesperado: " + e.getMessage());
+            }
         }
     }
 }
