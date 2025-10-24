@@ -154,12 +154,7 @@ public class VentaController {
         try {
             DBConnection.beginTransaction();
             
-            BigDecimal total = calcularTotal(detalles);
-            venta.setMonto(total);
-            venta.setMetodoPago(metodoPago);
-            venta.setEstado(Venta.EstadoVenta.COMPLETADA);
             
-            ventaRepository.actualizar(venta);
             
             for (int i = 0; i < detalles.size(); i++) {
                 DetalleVenta detalle = detalles.get(i);
@@ -171,6 +166,13 @@ public class VentaController {
                     libroRepository.actualizarStock(libro.getIdLibro(), -detalle.getCantidad());
                 }
             }
+
+            BigDecimal total = calcularTotal(detalles);
+            venta.setMonto(total);
+            venta.setMetodoPago(metodoPago);
+            venta.setEstado(Venta.EstadoVenta.COMPLETADA);
+            
+            ventaRepository.actualizar(venta);
             
             DBConnection.commitTransaction();
             
