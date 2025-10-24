@@ -2,57 +2,73 @@
 title Diagrama de Secuencia - CU11: Registrar Libro
 
 actor "Usuario" as Usuario
-participant "Interfaz" as Interfaz
-participant "ShopController" as Controller
-participant "LibroRepository" as Repository
-participant "AutorRepository" as AutorRepo
+participant "MenuView" as MenuView
+participant "LibroController" as LibroController
+participant "LibroRepository" as LibroRepository
+participant "AutorRepository" as AutorRepository
 database "Database" as DB
 
-Usuario -> Interfaz : Ingresar datos del libro\n(titulo, isbn, editorial, año, precio,\ngenero, stock, idAutor, tipo_libro,\n+ campos específicos según tipo)
-activate Interfaz
+Usuario -> MenuView : Seleccionar opción "Registrar Libro"
+activate MenuView
 
-Interfaz -> Controller : registrarLibro(datosLibro)
-activate Controller
+MenuView -> LibroController : registrarLibro()
+activate LibroController
+
+LibroController -> Usuario : Solicitar datos del libro\n(título, ISBN, editorial, año, precio,\ngénero, stock, ID autor, tipo_libro,\n+ campos específicos según tipo)
+activate Usuario
+
+Usuario -> LibroController : Ingresar datos del libro
+deactivate Usuario
 
 ' Validar que existe el autor
-Controller -> AutorRepo : obtenerAutor(idAutor)
-activate AutorRepo
+LibroController -> AutorRepository : obtenerPorId(idAutor)
+activate AutorRepository
 
-AutorRepo -> DB : SELECT FROM AUTOR
+AutorRepository -> DB : SELECT FROM AUTOR WHERE id_autor = ?
 activate DB
-DB --> AutorRepo : autor
+DB --> AutorRepository : autor o null
 deactivate DB
 
 alt Autor no encontrado
-    AutorRepo --> Controller : null
-    Controller --> Interfaz : Error: "Autor no existe"
-    Interfaz --> Usuario : Mensaje de error
-    deactivate Controller
-    deactivate Interfaz
+    AutorRepository --> LibroController : null
+    deactivate AutorRepository
+    LibroController -> Usuario : Error: "No se encontró el autor con ID: X"
+    activate Usuario
+    Usuario -> LibroController : Continuar
+    deactivate Usuario
+    LibroController --> MenuView : Error
+    deactivate LibroController
+    MenuView --> Usuario : Mensaje de error
+    deactivate MenuView
 else Autor encontrado
-    AutorRepo --> Controller : autor
-    deactivate AutorRepo
+    AutorRepository --> LibroController : autor
+    deactivate AutorRepository
     
     ' Validar datos del libro
-    Controller -> Controller : validarDatosLibro(datos)\n- precio > 0\n- stock >= 0\n- ISBN único\n- tipo_libro obligatorio
+    LibroController -> LibroController : validarDatosLibro(datos)\n- título no vacío\n- precio > 0\n- stock >= 0\n- ISBN único (si se proporciona)\n- tipo_libro obligatorio
     
     ' Insertar en tabla LIBRO con todos los campos
-    Controller -> Repository : crearLibro(todosLosDatos)
-    activate Repository
+    LibroController -> LibroRepository : registrar(libro)
+    activate LibroRepository
     
-    Repository -> DB : INSERT INTO LIBRO\n(campos comunes + campos específicos según tipo)
+    LibroRepository -> DB : INSERT INTO LIBRO\n(campos comunes + campos específicos según tipo)
     activate DB
-    DB --> Repository : id_libro
+    DB --> LibroRepository : id_libro generado
     deactivate DB
     
-    Repository --> Controller : libro creado
-    deactivate Repository
+    LibroRepository --> LibroController : libro con ID asignado
+    deactivate LibroRepository
     
-    Controller --> Interfaz : Libro registrado exitosamente\n(id: id_libro)
-    deactivate Controller
+    LibroController -> Usuario : Libro registrado exitosamente\n(ID: id_libro)
+    activate Usuario
+    Usuario -> LibroController : Continuar
+    deactivate Usuario
     
-    Interfaz --> Usuario : Mensaje de éxito
-    deactivate Interfaz
+    LibroController --> MenuView : Éxito
+    deactivate LibroController
+    
+    MenuView --> Usuario : Mensaje de éxito
+    deactivate MenuView
 end
 
 @enduml

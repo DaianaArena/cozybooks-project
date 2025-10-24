@@ -2,115 +2,248 @@
 title Diagrama de Secuencia - CU16: Registrar Venta
 
 actor "Usuario" as Usuario
-participant "Interfaz" as Interfaz
-participant "ShopController" as Controller
-participant "VentaRepository" as VentaRepo
-participant "ClienteRepository" as ClienteRepo
-participant "LibroRepository" as LibroRepo
+participant "MenuView" as MenuView
+participant "VentaController" as VentaController
+participant "VentaRepository" as VentaRepository
+participant "DetalleVentaRepository" as DetalleVentaRepository
+participant "ClienteRepository" as ClienteRepository
+participant "LibroRepository" as LibroRepository
+participant "ArchivoService" as ArchivoService
 database "Database" as DB
 
-Usuario -> Interfaz : Seleccionar cliente y libros\npara la venta
-activate Interfaz
+Usuario -> MenuView : Seleccionar opción "Registrar Venta"
+activate MenuView
+
+MenuView -> VentaController : registrarVenta()
+activate VentaController
+
+VentaController -> Usuario : Solicitar ID del cliente
+activate Usuario
+Usuario -> VentaController : Ingresar ID cliente
+deactivate Usuario
 
 ' Validar que existe el cliente
-Interfaz -> Controller : iniciarVenta(idCliente)
-activate Controller
+VentaController -> ClienteRepository : obtenerPorId(idCliente)
+activate ClienteRepository
 
-Controller -> ClienteRepo : obtenerCliente(idCliente)
-activate ClienteRepo
-
-ClienteRepo -> DB : SELECT FROM CLIENTE
+ClienteRepository -> DB : SELECT FROM CLIENTE WHERE id_cliente = ?
 activate DB
-DB --> ClienteRepo : cliente
+DB --> ClienteRepository : cliente o null
 deactivate DB
 
 alt Cliente no encontrado
-    ClienteRepo --> Controller : null
-    Controller --> Interfaz : Error: "Cliente no existe"
-    Interfaz --> Usuario : Mensaje de error
-    deactivate Controller
-    deactivate Interfaz
+    ClienteRepository --> VentaController : null
+    deactivate ClienteRepository
+    VentaController -> Usuario : Error: "No se encontró el cliente con ID: X"
+    activate Usuario
+    Usuario -> VentaController : Continuar
+    deactivate Usuario
+    VentaController --> MenuView : Error
+    deactivate VentaController
+    MenuView --> Usuario : Mensaje de error
+    deactivate MenuView
 else Cliente encontrado
-    ClienteRepo --> Controller : cliente
-    deactivate ClienteRepo
+    ClienteRepository --> VentaController : cliente
+    deactivate ClienteRepository
+    
+    VentaController -> Usuario : Mostrar cliente seleccionado
+    activate Usuario
+    Usuario -> VentaController : Continuar
+    deactivate Usuario
+    
+    ' Crear venta inicial (PENDIENTE, monto 0)
+    VentaController -> VentaRepository : registrar(venta)
+    activate VentaRepository
+    VentaRepository -> DB : INSERT INTO VENTA (estado: PENDIENTE, monto: 0)
+    activate DB
+    DB --> VentaRepository : id_venta generado
+    deactivate DB
+    VentaRepository --> VentaController : venta con ID asignado
+    deactivate VentaRepository
     
     ' Usuario agrega libros a la venta (ciclo)
     loop Para cada libro agregado
-        Usuario -> Interfaz : Agregar libro (idLibro, cantidad)
-        Interfaz -> Controller : agregarLibroAVenta(idLibro, cantidad)
+        VentaController -> Usuario : Solicitar ID del libro (0 para finalizar)
+        activate Usuario
+        Usuario -> VentaController : Ingresar ID libro
+        deactivate Usuario
         
-        ' Validar que existe el libro
-        Controller -> LibroRepo : obtenerLibro(idLibro)
-        activate LibroRepo
-        
-        LibroRepo -> DB : SELECT FROM LIBRO
-        activate DB
-        DB --> LibroRepo : libro
-        deactivate DB
-        
-        alt Libro no encontrado
-            LibroRepo --> Controller : null
-            Controller --> Interfaz : Error: "Libro no existe"
-            Interfaz --> Usuario : Mensaje de error
-        else Libro encontrado y stock suficiente
-            LibroRepo --> Controller : libro
-            deactivate LibroRepo
+        alt ID libro = 0 (finalizar)
+            break
+        else ID libro válido
+            ' Validar que existe el libro
+            VentaController -> LibroRepository : obtenerPorId(idLibro)
+            activate LibroRepository
             
-            Controller -> Controller : validarStock(libro, cantidad)
+            LibroRepository -> DB : SELECT FROM LIBRO WHERE id_libro = ?
+            activate DB
+            DB --> LibroRepository : libro o null
+            deactivate DB
             
-            alt Stock insuficiente (solo FISICO)
-                Controller --> Interfaz : Error: "Stock insuficiente"
-                Interfaz --> Usuario : Mensaje de error
-            else Stock suficiente o tipo DIGITAL/AUDIOLIBRO
-                Controller -> Controller : agregarACarrito(libro, cantidad)
-                Controller --> Interfaz : Libro agregado al carrito
-                Interfaz --> Usuario : Confirmación
+            alt Libro no encontrado
+                LibroRepository --> VentaController : null
+                deactivate LibroRepository
+                VentaController -> Usuario : Error: "No se encontró el libro con ID: X"
+                activate Usuario
+                Usuario -> VentaController : Continuar
+                deactivate Usuario
+            else Libro encontrado
+                LibroRepository --> VentaController : libro
+                deactivate LibroRepository
+                
+                VentaController -> Usuario : Solicitar cantidad
+                activate Usuario
+                Usuario -> VentaController : Ingresar cantidad
+                deactivate Usuario
+                
+                VentaController -> VentaController : validarStock(libro, cantidad)
+                
+                alt Stock insuficiente (solo FISICO)
+                    VentaController -> Usuario : Error: "Stock insuficiente. Disponible: X"
+                    activate Usuario
+                    Usuario -> VentaController : Continuar
+                    deactivate Usuario
+                else Stock suficiente o tipo DIGITAL/AUDIOLIBRO
+                    VentaController -> VentaController : crearDetalleVenta(libro, cantidad)
+                    VentaController -> Usuario : Libro agregado: título x cantidad = $subtotal
+                    activate Usuario
+                    Usuario -> VentaController : Continuar
+                    deactivate Usuario
+                end
             end
         end
     end
     
-    ' Usuario confirma la venta
-    Usuario -> Interfaz : Confirmar venta\n(metodoPago)
-    Interfaz -> Controller : confirmarVenta(metodoPago)
-    
-    Controller -> Controller : calcularMontoTotal()
-    
-    ' Insertar la venta
-    Controller -> VentaRepo : crearVenta(idCliente, monto, metodoPago)
-    activate VentaRepo
-    
-    VentaRepo -> DB : INSERT INTO VENTA
-    activate DB
-    DB --> VentaRepo : id_venta
-    deactivate DB
-    
-    ' Insertar detalles de venta
-    loop Para cada libro en el carrito
-        VentaRepo -> DB : INSERT INTO DETALLE_VENTA
-        activate DB
-        DB --> VentaRepo : OK
-        deactivate DB
+    alt No hay libros agregados
+        VentaController -> Usuario : Error: "Debe agregar al menos un libro"
+        activate Usuario
+        Usuario -> VentaController : Continuar
+        deactivate Usuario
+        VentaController --> MenuView : Error
+        deactivate VentaController
+        MenuView --> Usuario : Mensaje de error
+        deactivate MenuView
+    else Hay libros agregados
+        VentaController -> Usuario : Mostrar resumen de venta y total
+        activate Usuario
+        Usuario -> VentaController : Confirmar venta (s/n)
+        deactivate Usuario
         
-        ' Actualizar stock (solo para libros físicos)
-        alt Tipo libro = FISICO
-            VentaRepo -> DB : UPDATE LIBRO (stock)
+        alt Usuario cancela
+            VentaController -> Usuario : Venta cancelada
+            activate Usuario
+            Usuario -> VentaController : Continuar
+            deactivate Usuario
+            VentaController --> MenuView : Cancelado
+            deactivate VentaController
+            MenuView --> Usuario : Mensaje de cancelación
+            deactivate MenuView
+        else Usuario confirma
+            VentaController -> Usuario : Solicitar método de pago (1-3)
+            activate Usuario
+            Usuario -> VentaController : Seleccionar método de pago
+            deactivate Usuario
+            
+            ' Confirmar venta con transacción
+            VentaController -> VentaController : confirmarVenta(venta, detalles, libros, metodoPago)
+            
+            note right : Inicia transacción
+            VentaController -> VentaController : calcularTotal(detalles)
+            VentaController -> VentaController : actualizar venta (monto, estado: COMPLETADA)
+            VentaController -> VentaRepository : actualizar(venta)
+            activate VentaRepository
+            VentaRepository -> DB : UPDATE VENTA SET monto, estado, metodo_pago
             activate DB
-            DB --> VentaRepo : OK
+            DB --> VentaRepository : filas afectadas
             deactivate DB
+            VentaRepository --> VentaController : OK
+            deactivate VentaRepository
+            
+            loop Para cada detalle de venta
+                VentaController -> DetalleVentaRepository : registrar(detalle)
+                activate DetalleVentaRepository
+                DetalleVentaRepository -> DB : INSERT INTO DETALLE_VENTA
+                activate DB
+                DB --> DetalleVentaRepository : id_detalle generado
+                deactivate DB
+                DetalleVentaRepository --> VentaController : detalle con ID
+                deactivate DetalleVentaRepository
+                
+                alt Libro es FISICO
+                    VentaController -> LibroRepository : actualizarStock(idLibro, -cantidad)
+                    activate LibroRepository
+                    LibroRepository -> DB : UPDATE LIBRO SET stock = stock - cantidad
+                    activate DB
+                    DB --> LibroRepository : filas afectadas
+                    deactivate DB
+                    LibroRepository --> VentaController : OK
+                    deactivate LibroRepository
+                end
+            end
+            
+            note right : Confirma transacción
+            VentaController -> VentaController : commitTransaction()
+            VentaController -> VentaRepository : obtenerPorId(idVenta) [verificación]
+            activate VentaRepository
+            VentaRepository -> DB : SELECT FROM VENTA WHERE id_venta = ?
+            activate DB
+            DB --> VentaRepository : venta actualizada
+            deactivate DB
+            VentaRepository --> VentaController : venta verificada
+            deactivate VentaRepository
+            
+            VentaController -> Usuario : Venta registrada exitosamente\n(ID: id_venta, Total: monto, Estado: COMPLETADA)
+            activate Usuario
+            Usuario -> VentaController : Continuar
+            deactivate Usuario
+            
+            ' Generar ticket
+            VentaController -> VentaController : generarTicket(idVenta)
+            VentaController -> ClienteRepository : obtenerPorId(idCliente)
+            activate ClienteRepository
+            ClienteRepository -> DB : SELECT FROM CLIENTE WHERE id_cliente = ?
+            activate DB
+            DB --> ClienteRepository : cliente
+            deactivate DB
+            ClienteRepository --> VentaController : cliente
+            deactivate ClienteRepository
+            
+            VentaController -> DetalleVentaRepository : buscarPorVenta(idVenta)
+            activate DetalleVentaRepository
+            DetalleVentaRepository -> DB : SELECT FROM DETALLE_VENTA WHERE id_venta = ?
+            activate DB
+            DB --> DetalleVentaRepository : detalles
+            deactivate DB
+            DetalleVentaRepository --> VentaController : detalles
+            deactivate DetalleVentaRepository
+            
+            VentaController -> LibroRepository : obtenerPorId(idLibro) [para cada detalle]
+            activate LibroRepository
+            LibroRepository -> DB : SELECT FROM LIBRO WHERE id_libro = ?
+            activate DB
+            DB --> LibroRepository : libro
+            deactivate DB
+            LibroRepository --> VentaController : libro
+            deactivate LibroRepository
+            
+            VentaController -> ArchivoService : generarTicket(venta, cliente, detalles, libros)
+            activate ArchivoService
+            ArchivoService -> ArchivoService : crear archivo .txt en carpeta tickets/
+            ArchivoService --> VentaController : ticket generado
+            deactivate ArchivoService
+            
+            VentaController -> Usuario : Ticket generado exitosamente
+            activate Usuario
+            Usuario -> VentaController : Continuar
+            deactivate Usuario
+            
+            VentaController --> MenuView : Éxito
+            deactivate VentaController
+            
+            MenuView --> Usuario : Mensaje de éxito
+            deactivate MenuView
         end
     end
-    
-    VentaRepo --> Controller : venta creada
-    deactivate VentaRepo
-    
-    ' Generar ticket (CU21 - include)
-    Controller -> Controller : generarTicket(id_venta)
-    
-    Controller --> Interfaz : Venta registrada exitosamente\n(id: id_venta, monto: total)
-    deactivate Controller
-    
-    Interfaz --> Usuario : Mensaje de éxito + ticket
-    deactivate Interfaz
 end
 
 @enduml
