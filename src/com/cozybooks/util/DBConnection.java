@@ -68,7 +68,9 @@ public class DBConnection {
      */
     public static void beginTransaction() throws SQLException {
         Connection conn = getConnection();
-        conn.setAutoCommit(false);
+        if (conn.getAutoCommit()) {
+            conn.setAutoCommit(false);
+        }
     }
 
     /**
@@ -77,8 +79,10 @@ public class DBConnection {
      */
     public static void commitTransaction() throws SQLException {
         Connection conn = getConnection();
-        conn.commit();
-        conn.setAutoCommit(true);
+        if (!conn.getAutoCommit()) {
+            conn.commit();
+            conn.setAutoCommit(true);
+        }
     }
 
     /**
@@ -87,7 +91,9 @@ public class DBConnection {
      */
     public static void rollbackTransaction() throws SQLException {
         Connection conn = getConnection();
-        conn.rollback();
-        conn.setAutoCommit(true);
+        if (!conn.getAutoCommit()) {
+            conn.rollback();
+            conn.setAutoCommit(true);
+        }
     }
 }
