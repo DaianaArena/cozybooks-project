@@ -330,16 +330,19 @@ public class VentaController {
                 return;
             }
             
-            System.out.printf("%-8s %-20s %-8s %-8s %-12s %-15s %-15s%n", 
+            System.out.printf("%-8s %-20s %-8s %-12s %-15s %-15s%n", 
                 "ID", "Fecha", "Cliente", "Monto", "Método Pago", "Estado");
             System.out.println("=".repeat(80));
             
             for (Venta venta : ventas) {
-                System.out.printf("%-8d %-20s %-8d %-12.2f %-15s %-15s%n",
+                BigDecimal monto = venta.getMonto();
+                String montoStr = (monto != null) ? String.format("%.2f", monto) : "0.00";
+                
+                System.out.printf("%-8d %-20s %-8d %-12s %-15s %-15s%n",
                     venta.getIdVenta(),
                     venta.getFecha().toLocalDate().toString(),
                     venta.getIdCliente(),
-                    venta.getMonto(),
+                    montoStr,
                     venta.getMetodoPago(),
                     venta.getEstado()
                 );
@@ -375,11 +378,14 @@ public class VentaController {
             System.out.println("=".repeat(80));
             
             for (Venta venta : ventas) {
-                System.out.printf("%-8d %-20s %-8d %-12.2f %-15s %-15s%n",
+                BigDecimal monto = venta.getMonto();
+                String montoStr = (monto != null) ? String.format("%.2f", monto) : "0.00";
+                
+                System.out.printf("%-8d %-20s %-8d %-12s %-15s %-15s%n",
                     venta.getIdVenta(),
                     venta.getFecha().toLocalDate().toString(),
                     venta.getIdCliente(),
-                    venta.getMonto(),
+                    montoStr,
                     venta.getMetodoPago(),
                     venta.getEstado()
                 );
