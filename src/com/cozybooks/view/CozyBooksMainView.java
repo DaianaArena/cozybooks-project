@@ -14,18 +14,21 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 /**
- * Vista principal de la aplicación Cozy Books con interfaz JavaFX
- * Reemplaza MenuView.java manteniendo todas las funcionalidades
+ * Vista principal de la aplicación Cozy Books con interfaz JavaFX moderna
+ * Dashboard con diseño responsivo y paleta de colores suave
  */
 public class CozyBooksMainView extends Application {
     
     private Stage primaryStage;
     private BorderPane root;
-    private VBox menuContainer;
-    private StackPane contentArea;
+    private VBox sidebar;
+    private VBox contentArea;
     
     // Controladores
     private AutorController autorController;
@@ -42,9 +45,7 @@ public class CozyBooksMainView extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Cozy Books System - Sistema de Gestión de Librería");
-        this.primaryStage.setMinWidth(1250);
-        this.primaryStage.setMinHeight(650);
+        // No establecer título ni dimensiones aquí, se configuran en Main.java
         
         // Inicializar controladores
         autorController = new AutorController();
@@ -60,143 +61,400 @@ public class CozyBooksMainView extends Application {
         
         setupUI();
         
-        Scene scene = new Scene(root, 1200, 800);
-        scene.getStylesheets().add(getClass().getResource("../styles.css").toExternalForm());
-        primaryStage.setScene(scene);
-        primaryStage.show();
-        
-        // Mostrar vista de bienvenida inicialmente
-        showWelcomeView();
+        // Mostrar dashboard por defecto
+        showDashboard();
     }
     
     private void setupUI() {
         root = new BorderPane();
+        root.setStyle("-fx-background-color: #e6e4ce;");
         
-        // Crear el menú lateral
-        createMenuBar();
+        // Crear header
+        HBox header = createHeader();
+        root.setTop(header);
         
-        // Área de contenido
-        contentArea = new StackPane();
+        // Crear sidebar
+        sidebar = createSidebar();
+        root.setLeft(sidebar);
+        
+        // Crear área de contenido
+        contentArea = new VBox();
+        contentArea.setStyle("-fx-background-color: #e6e4ce;");
         contentArea.setPadding(new Insets(20));
         root.setCenter(contentArea);
         
-        // Configurar el layout
-        root.setLeft(menuContainer);
-        BorderPane.setMargin(menuContainer, new Insets(10));
+        Scene scene = new Scene(root);
+        try {
+            scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+        } catch (Exception e) {
+            System.out.println("⚠ Advertencia: No se pudo cargar el archivo CSS: " + e.getMessage());
+        }
+        primaryStage.setScene(scene);
     }
     
-    private void createMenuBar() {
-        menuContainer = new VBox(10);
-        menuContainer.setPadding(new Insets(20));
-        menuContainer.setPrefWidth(250);
-        menuContainer.setStyle("-fx-background-color: #2c3e50; -fx-background-radius: 10;");
+    private HBox createHeader() {
+        HBox header = new HBox();
+        header.setStyle("-fx-background-color: #ede3e9; -fx-padding: 15 20;");
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setSpacing(20);
         
-        // Título
-        Text title = new Text("COZY BOOKS");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        title.setFill(Color.WHITE);
-        title.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 0, 1);");
+        // Logo con icono
+        HBox logoContainer = new HBox(10);
+        logoContainer.setAlignment(Pos.CENTER_LEFT);
         
-        VBox titleContainer = new VBox(title);
-        titleContainer.setAlignment(Pos.CENTER);
-        titleContainer.setPadding(new Insets(0, 0, 30, 0));
+        try {
+            Image bookIcon = new Image(getClass().getResourceAsStream("assets/book-icon.png"));
+            ImageView bookIconView = new ImageView(bookIcon);
+            bookIconView.setFitWidth(32);
+            bookIconView.setFitHeight(32);
+            bookIconView.setPreserveRatio(true);
+            logoContainer.getChildren().add(bookIconView);
+        } catch (Exception e) {
+            System.out.println("⚠ Advertencia: No se pudo cargar el icono del libro: " + e.getMessage());
+        }
         
-        // Botones del menú
-        Button autoresBtn = createMenuButton("📚 Autores", this::showAutorView);
-        Button clientesBtn = createMenuButton("👥 Clientes", this::showClienteView);
-        Button librosBtn = createMenuButton("📖 Libros", this::showLibroView);
-        Button ventasBtn = createMenuButton("💰 Ventas", this::showVentaView);
-        Button salirBtn = createMenuButton("🚪 Salir", this::exitApplication);
+        Text logo = new Text("CozyBooks");
+        logo.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        logo.setStyle("-fx-fill: #91818a;");
         
-        // Estilo especial para el botón de salir
-        salirBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 20;");
-        salirBtn.setOnMouseEntered(e -> salirBtn.setStyle("-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 20;"));
-        salirBtn.setOnMouseExited(e -> salirBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 20;"));
+        logoContainer.getChildren().add(logo);
         
-        menuContainer.getChildren().addAll(
-            titleContainer,
-            autoresBtn,
-            clientesBtn,
-            librosBtn,
-            ventasBtn,
-            new Separator(),
-            salirBtn
-        );
+        // Spacer
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        // Iconos del header
+        HBox headerIcons = new HBox(15);
+        headerIcons.setAlignment(Pos.CENTER_RIGHT);
+        
+        // Icono de notificaciones
+        Button notificationBtn = createIconButton("🔔", "#b2a3b5");
+        
+        // Icono de configuración
+        Button settingsBtn = createIconButton("⚙️", "#b2a3b5");
+        
+        // Usuario
+        HBox userInfo = new HBox(8);
+        userInfo.setAlignment(Pos.CENTER);
+        Button userBtn = createIconButton("👤", "#b2a3b5");
+        Text userText = new Text("Admin");
+        userText.setFont(Font.font("Arial", 14));
+        userText.setStyle("-fx-fill: #b2a3b5;");
+        userInfo.getChildren().addAll(userBtn, userText);
+        
+        headerIcons.getChildren().addAll(notificationBtn, settingsBtn, userInfo);
+        header.getChildren().addAll(logoContainer, spacer, headerIcons);
+        
+        return header;
     }
     
-    private Button createMenuButton(String text, Runnable action) {
+    private VBox createSidebar() {
+        VBox sidebar = new VBox();
+        sidebar.setStyle("-fx-background-color: #c09bd8; -fx-padding: 20;");
+        sidebar.setSpacing(10);
+        sidebar.setPrefWidth(250);
+        
+        // Elementos del menú
+        Button dashboardBtn = createMenuButton("📊 Dashboard", true);
+        Button librosBtn = createMenuButton("📚 Gestión de Libros", false);
+        Button autoresBtn = createMenuButton("👤 Gestión de Autores", false);
+        Button clientesBtn = createMenuButton("👥 Gestión de Clientes", false);
+        Button ventasBtn = createMenuButton("🛒 Gestión de Ventas", false);
+        Button reportesBtn = createMenuButton("📈 Reportes", false);
+        
+        // Eventos de los botones
+        dashboardBtn.setOnAction(e -> showDashboard());
+        librosBtn.setOnAction(e -> showLibros());
+        autoresBtn.setOnAction(e -> showAutores());
+        clientesBtn.setOnAction(e -> showClientes());
+        ventasBtn.setOnAction(e -> showVentas());
+        reportesBtn.setOnAction(e -> showReportes());
+        
+        sidebar.getChildren().addAll(dashboardBtn, librosBtn, autoresBtn, clientesBtn, ventasBtn, reportesBtn);
+        
+        return sidebar;
+    }
+    
+    private Button createMenuButton(String text, boolean isActive) {
         Button button = new Button(text);
-        button.setMaxWidth(Double.MAX_VALUE);
-        button.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 20;");
+        button.setPrefWidth(200);
+        button.setPrefHeight(45);
+        button.setFont(Font.font("Arial", 14));
+        button.setAlignment(Pos.CENTER_LEFT);
         
-        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 20;"));
-        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 20;"));
+        if (isActive) {
+            button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 10; -fx-border-radius: 10;");
+        } else {
+            button.setStyle("-fx-background-color: transparent; -fx-text-fill: #91818a; -fx-background-radius: 10; -fx-border-radius: 10;");
+        }
         
-        button.setOnAction(e -> action.run());
+        button.setOnMouseEntered(e -> {
+            if (!isActive) {
+                button.setStyle("-fx-background-color: rgba(159, 132, 189, 0.3); -fx-text-fill: #91818a; -fx-background-radius: 10; -fx-border-radius: 10;");
+            }
+        });
+        
+        button.setOnMouseExited(e -> {
+            if (!isActive) {
+                button.setStyle("-fx-background-color: transparent; -fx-text-fill: #91818a; -fx-background-radius: 10; -fx-border-radius: 10;");
+            }
+        });
         
         return button;
     }
     
-    private void showWelcomeView() {
-        VBox welcomeContainer = new VBox(20);
-        welcomeContainer.setAlignment(Pos.CENTER);
-        welcomeContainer.setPadding(new Insets(50));
-        
-        Text welcomeTitle = new Text("¡Bienvenido a Cozy Books System!");
-        welcomeTitle.setFont(Font.font("Arial", FontWeight.BOLD, 32));
-        welcomeTitle.setFill(Color.web("#2c3e50"));
-        
-        Text subtitle = new Text("Sistema de Gestión de Librería");
-        subtitle.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        subtitle.setFill(Color.web("#7f8c8d"));
-        
-        Text description = new Text("Seleccione una opción del menú lateral para comenzar a gestionar su librería");
-        description.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
-        description.setFill(Color.web("#95a5a6"));
-        description.setWrappingWidth(400);
-        
-        VBox textContainer = new VBox(10, welcomeTitle, subtitle, description);
-        textContainer.setAlignment(Pos.CENTER);
-        
-        welcomeContainer.getChildren().add(textContainer);
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(welcomeContainer);
+    private Button createIconButton(String icon, String color) {
+        Button button = new Button(icon);
+        button.setStyle("-fx-background-color: transparent; -fx-font-size: 16; -fx-text-fill: " + color + ";");
+        button.setPrefSize(40, 40);
+        return button;
     }
     
-    private void showAutorView() {
+    private void showDashboard() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(autorView.getView());
+        
+        // Título del dashboard
+        VBox titleSection = new VBox(5);
+        Text title = new Text("Dashboard");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 32));
+        title.setStyle("-fx-fill: #91818a;");
+        
+        Text subtitle = new Text("Bienvenido al sistema de gestión de CozyBooks");
+        subtitle.setFont(Font.font("Arial", 16));
+        subtitle.setStyle("-fx-fill: #91818a;");
+        
+        titleSection.getChildren().addAll(title, subtitle);
+        contentArea.getChildren().add(titleSection);
+        
+        // Tarjetas de resumen
+        HBox summaryCards = createSummaryCards();
+        contentArea.getChildren().add(summaryCards);
+        
+        // Sección inferior
+        HBox bottomSection = new HBox(20);
+        bottomSection.setSpacing(20);
+        
+        // Libros recientes
+        VBox recentBooks = createRecentBooksSection();
+        
+        // Acciones rápidas
+        VBox quickActions = createQuickActionsSection();
+        
+        bottomSection.getChildren().addAll(recentBooks, quickActions);
+        contentArea.getChildren().add(bottomSection);
     }
     
-    private void showClienteView() {
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(clienteView.getView());
+    private HBox createSummaryCards() {
+        HBox cardsContainer = new HBox(20);
+        cardsContainer.setPadding(new Insets(20, 0, 0, 0));
+        
+        // Tarjeta 1: Total de Libros
+        VBox card1 = createSummaryCard("📚", "2,847", "Total de Libros");
+        
+        // Tarjeta 2: Autores Registrados
+        VBox card2 = createSummaryCard("👤", "156", "Autores Registrados");
+        
+        // Tarjeta 3: Clientes Activos
+        VBox card3 = createSummaryCard("👥", "1,234", "Clientes Activos");
+        
+        // Tarjeta 4: Ventas del Mes
+        VBox card4 = createSummaryCard("🛒", "$12,450", "Ventas del Mes");
+        
+        cardsContainer.getChildren().addAll(card1, card2, card3, card4);
+        return cardsContainer;
     }
     
-    private void showLibroView() {
+    private VBox createSummaryCard(String icon, String number, String label) {
+        VBox card = new VBox(10);
+        card.setStyle("-fx-background-color: #ede3e9; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        card.setAlignment(Pos.CENTER);
+        card.setPrefWidth(200);
+        
+        Text iconText = new Text(icon);
+        iconText.setFont(Font.font("Arial", 32));
+        iconText.setStyle("-fx-fill: #9f84bd;");
+        
+        Text numberText = new Text(number);
+        numberText.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        numberText.setStyle("-fx-fill: #91818a;");
+        
+        Text labelText = new Text(label);
+        labelText.setFont(Font.font("Arial", 12));
+        labelText.setStyle("-fx-fill: #c3baaa;");
+        labelText.setTextAlignment(TextAlignment.CENTER);
+        
+        card.getChildren().addAll(iconText, numberText, labelText);
+        return card;
+    }
+    
+    private VBox createRecentBooksSection() {
+        VBox section = new VBox(15);
+        section.setPrefWidth(400);
+        
+        // Título de la sección
+        HBox titleRow = new HBox();
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+        titleRow.setSpacing(10);
+        
+        Text title = new Text("Libros Recientes");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        title.setStyle("-fx-fill: #91818a;");
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        Text seeAll = new Text("Ver todos");
+        seeAll.setFont(Font.font("Arial", 12));
+        seeAll.setStyle("-fx-fill: #91818a; -fx-underline: true;");
+        
+        titleRow.getChildren().addAll(title, spacer, seeAll);
+        
+        // Lista de libros
+        VBox booksList = new VBox(10);
+        
+        // Libro 1
+        HBox book1 = createBookItem("El Principito", "Antoine de Saint-Exupéry", "Físico", "Disponible");
+        
+        // Libro 2
+        HBox book2 = createBookItem("Cien Años de Soledad", "Gabriel García Márquez", "Digital", "Disponible");
+        
+        // Libro 3
+        HBox book3 = createBookItem("1984", "George Orwell", "Audiolibro", "Agotado");
+        
+        booksList.getChildren().addAll(book1, book2, book3);
+        
+        section.getChildren().addAll(titleRow, booksList);
+        return section;
+    }
+    
+    private HBox createBookItem(String title, String author, String format, String status) {
+        HBox item = new HBox(15);
+        item.setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
+        item.setAlignment(Pos.CENTER_LEFT);
+        
+        VBox bookInfo = new VBox(5);
+        
+        Text titleText = new Text(title);
+        titleText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        titleText.setStyle("-fx-fill: #91818a;");
+        
+        Text authorText = new Text(author);
+        authorText.setFont(Font.font("Arial", 12));
+        authorText.setStyle("-fx-fill: #91818a;");
+        
+        bookInfo.getChildren().addAll(titleText, authorText);
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        // Tags
+        HBox tags = new HBox(8);
+        
+        Label formatTag = new Label(format);
+        formatTag.setStyle("-fx-background-color: #c3baaa; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+        
+        Label statusTag = new Label(status);
+        if (status.equals("Disponible")) {
+            statusTag.setStyle("-fx-background-color: #ebdccb; -fx-text-fill: #91818a; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+        } else {
+            statusTag.setStyle("-fx-background-color: #ebc3db; -fx-text-fill: #91818a; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+        }
+        
+        tags.getChildren().addAll(formatTag, statusTag);
+        
+        item.getChildren().addAll(bookInfo, spacer, tags);
+        return item;
+    }
+    
+    private VBox createQuickActionsSection() {
+        VBox section = new VBox(15);
+        section.setPrefWidth(300);
+        
+        Text title = new Text("Acciones Rápidas");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        title.setStyle("-fx-fill: #91818a;");
+        
+        // Grid de botones 2x2
+        GridPane buttonGrid = new GridPane();
+        buttonGrid.setHgap(15);
+        buttonGrid.setVgap(15);
+        
+        Button btn1 = createQuickActionButton("➕", "Registrar Libro");
+        Button btn2 = createQuickActionButton("👤", "Nuevo Cliente");
+        Button btn3 = createQuickActionButton("🛒", "Nueva Venta");
+        Button btn4 = createQuickActionButton("📈", "Ver Reportes");
+        
+        // Eventos
+        btn1.setOnAction(e -> showLibros());
+        btn2.setOnAction(e -> showClientes());
+        btn3.setOnAction(e -> showVentas());
+        btn4.setOnAction(e -> showReportes());
+        
+        buttonGrid.add(btn1, 0, 0);
+        buttonGrid.add(btn2, 1, 0);
+        buttonGrid.add(btn3, 0, 1);
+        buttonGrid.add(btn4, 1, 1);
+        
+        section.getChildren().addAll(title, buttonGrid);
+        return section;
+    }
+    
+    private Button createQuickActionButton(String icon, String label) {
+        VBox buttonContent = new VBox(8);
+        buttonContent.setAlignment(Pos.CENTER);
+        
+        Text iconText = new Text(icon);
+        iconText.setFont(Font.font("Arial", 24));
+        iconText.setStyle("-fx-fill: #9f84bd;");
+        
+        Text labelText = new Text(label);
+        labelText.setFont(Font.font("Arial", 12));
+        labelText.setStyle("-fx-fill: #91818a;");
+        labelText.setTextAlignment(TextAlignment.CENTER);
+        
+        buttonContent.getChildren().addAll(iconText, labelText);
+        
+        Button button = new Button();
+        button.setGraphic(buttonContent);
+        button.setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
+        button.setPrefSize(120, 100);
+        
+        button.setOnMouseEntered(e -> {
+            button.setStyle("-fx-background-color: #c09bd8; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
+        });
+        
+        button.setOnMouseExited(e -> {
+            button.setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
+        });
+        
+        return button;
+    }
+    
+    private void showLibros() {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(libroView.getView());
     }
     
-    private void showVentaView() {
+    private void showAutores() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(autorView.getView());
+    }
+    
+    private void showClientes() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(clienteView.getView());
+    }
+    
+    private void showVentas() {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(ventaView.getView());
     }
     
-    private void exitApplication() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar Salida");
-        alert.setHeaderText("¿Está seguro de que desea salir?");
-        alert.setContentText("Se cerrará la aplicación Cozy Books System.");
-        
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                primaryStage.close();
-            }
-        });
-    }
-    
-    public static void main(String[] args) {
-        launch(args);
+    private void showReportes() {
+        contentArea.getChildren().clear();
+        Text reportesText = new Text("Módulo de Reportes - En desarrollo");
+        reportesText.setFont(Font.font("Arial", 24));
+        reportesText.setStyle("-fx-fill: #91818a;");
+        contentArea.getChildren().add(reportesText);
     }
 }
