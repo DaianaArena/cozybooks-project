@@ -92,7 +92,7 @@ public class LibroView {
         TextField searchField = new TextField();
         searchField.setPromptText("Buscar por título, ISBN o género...");
         searchField.setPrefWidth(300);
-        searchField.setStyle("-fx-background-color: #faf8d4; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;");
+        searchField.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;");
         
         // Botón de búsqueda
         Button searchButton = new Button("🔍");
@@ -149,29 +149,24 @@ public class LibroView {
         // ID
         TableColumn<Libro, Integer> idColumn = new TableColumn<>("ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("idLibro"));
-        idColumn.setPrefWidth(80);
         idColumn.setStyle("-fx-alignment: CENTER;");
         
         // Título
         TableColumn<Libro, String> tituloColumn = new TableColumn<>("TÍTULO");
         tituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
-        tituloColumn.setPrefWidth(250);
         
         // Editorial
         TableColumn<Libro, String> editorialColumn = new TableColumn<>("EDITORIAL");
         editorialColumn.setCellValueFactory(new PropertyValueFactory<>("editorial"));
-        editorialColumn.setPrefWidth(150);
         
         // Año
         TableColumn<Libro, Integer> añoColumn = new TableColumn<>("AÑO");
         añoColumn.setCellValueFactory(new PropertyValueFactory<>("año"));
-        añoColumn.setPrefWidth(80);
         añoColumn.setStyle("-fx-alignment: CENTER;");
         
         // Precio
         TableColumn<Libro, BigDecimal> precioColumn = new TableColumn<>("PRECIO");
         precioColumn.setCellValueFactory(new PropertyValueFactory<>("precio"));
-        precioColumn.setPrefWidth(100);
         precioColumn.setStyle("-fx-alignment: CENTER_RIGHT;");
         precioColumn.setCellFactory(column -> new TableCell<Libro, BigDecimal>() {
             @Override
@@ -188,7 +183,6 @@ public class LibroView {
         // Tipo
         TableColumn<Libro, Libro.TipoLibro> tipoColumn = new TableColumn<>("TIPO");
         tipoColumn.setCellValueFactory(new PropertyValueFactory<>("tipoLibro"));
-        tipoColumn.setPrefWidth(120);
         tipoColumn.setStyle("-fx-alignment: CENTER;");
         tipoColumn.setCellFactory(column -> new TableCell<Libro, Libro.TipoLibro>() {
             @Override
@@ -204,7 +198,14 @@ public class LibroView {
                     else if (tipo.equals("AUDIOLIBRO")) tipo = "Audiolibro";
                     
                     setText(tipo);
-                    setStyle("-fx-background-color: #ebdccb; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+                    // Usar colores del dashboard
+                    if (tipo.equals("Físico")) {
+                        setStyle("-fx-background-color: #e8f5e8; -fx-text-fill: #2e7d32; -fx-background-radius: 4; -fx-padding: 4 8; -fx-alignment: CENTER;");
+                    } else if (tipo.equals("Digital")) {
+                        setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 4; -fx-padding: 4 8; -fx-alignment: CENTER;");
+                    } else {
+                        setStyle("-fx-background-color: #fce4ec; -fx-text-fill: #c2185b; -fx-background-radius: 4; -fx-padding: 4 8; -fx-alignment: CENTER;");
+                    }
                 }
             }
         });
@@ -212,7 +213,6 @@ public class LibroView {
         // Stock
         TableColumn<Libro, Integer> stockColumn = new TableColumn<>("STOCK");
         stockColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
-        stockColumn.setPrefWidth(80);
         stockColumn.setStyle("-fx-alignment: CENTER;");
         stockColumn.setCellFactory(column -> new TableCell<Libro, Integer>() {
             @Override
@@ -234,7 +234,6 @@ public class LibroView {
         
         // Acciones
         TableColumn<Libro, Void> actionsColumn = new TableColumn<>("ACCIONES");
-        actionsColumn.setPrefWidth(120);
         actionsColumn.setStyle("-fx-alignment: CENTER;");
         actionsColumn.setCellFactory(param -> new TableCell<Libro, Void>() {
             private final Button editButton = new Button("✏️");
@@ -269,6 +268,16 @@ public class LibroView {
         });
         
         libroTable.getColumns().addAll(idColumn, tituloColumn, editorialColumn, añoColumn, precioColumn, tipoColumn, stockColumn, actionsColumn);
+        
+        // Configurar ancho de columnas para que ocupen el 100%
+        idColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.08));
+        tituloColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.25));
+        editorialColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.15));
+        añoColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.08));
+        precioColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.12));
+        tipoColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.12));
+        stockColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.10));
+        actionsColumn.prefWidthProperty().bind(libroTable.widthProperty().multiply(0.10));
     }
     
     private VBox createTablePanel() {
