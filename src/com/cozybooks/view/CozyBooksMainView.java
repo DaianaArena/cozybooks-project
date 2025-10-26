@@ -488,13 +488,13 @@ public class CozyBooksMainView extends Application {
         Button btn1 = createQuickActionButton("➕", "Registrar Libro");
         Button btn2 = createQuickActionButton("👤", "Nuevo Cliente");
         Button btn3 = createQuickActionButton("🛒", "Nueva Venta");
-        Button btn4 = createQuickActionButton("📈", "Ver Reportes");
+        Button btn4 = createQuickActionButton("✍️", "Crear Autor");
         
         // Eventos
         btn1.setOnAction(e -> showLibros());
         btn2.setOnAction(e -> showClientes());
         btn3.setOnAction(e -> showVentas());
-        btn4.setOnAction(e -> showReportes());
+        btn4.setOnAction(e -> showAutores());
         
         buttonGrid.add(btn1, 0, 0);
         buttonGrid.add(btn2, 1, 0);
@@ -549,16 +549,31 @@ public class CozyBooksMainView extends Application {
     private void showAutores() {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(autorView.getView());
+        
+        // Actualizar el estado del botón del menú (autoresBtn es el tercer botón, índice 2)
+        if (menuButtons != null && menuButtons.size() > 2) {
+            setActiveButton(menuButtons, menuButtons.get(2));
+        }
     }
     
     private void showClientes() {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(clienteView.getView());
+        
+        // Actualizar el estado del botón del menú (clientesBtn es el cuarto botón, índice 3)
+        if (menuButtons != null && menuButtons.size() > 3) {
+            setActiveButton(menuButtons, menuButtons.get(3));
+        }
     }
     
     private void showVentas() {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(ventaView.getView());
+        
+        // Actualizar el estado del botón del menú (ventasBtn es el quinto botón, índice 4)
+        if (menuButtons != null && menuButtons.size() > 4) {
+            setActiveButton(menuButtons, menuButtons.get(4));
+        }
     }
     
     private void showReportes() {
