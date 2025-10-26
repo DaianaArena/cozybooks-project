@@ -204,6 +204,9 @@ public class CozyBooksMainView extends Application {
         button.setFont(Font.font("Arial", 14));
         button.setAlignment(Pos.CENTER_LEFT);
         
+        // Agregar una propiedad para rastrear si el botón está activo
+        button.getProperties().put("isActive", isActive);
+        
         if (isActive) {
             button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #fafafa; -fx-background-radius: 10; -fx-border-radius: 10;");
         } else {
@@ -211,13 +214,15 @@ public class CozyBooksMainView extends Application {
         }
         
         button.setOnMouseEntered(e -> {
-            if (!isActive) {
+            Boolean active = (Boolean) button.getProperties().get("isActive");
+            if (!active) {
                 button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #fafafa; -fx-background-radius: 10; -fx-border-radius: 10;");
             }
         });
         
         button.setOnMouseExited(e -> {
-            if (!isActive) {
+            Boolean active = (Boolean) button.getProperties().get("isActive");
+            if (!active) {
                 button.setStyle("-fx-background-color: transparent; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
             }
         });
@@ -229,9 +234,11 @@ public class CozyBooksMainView extends Application {
         for (Button button : menuButtons) {
             if (button == activeButton) {
                 // Botón activo
+                button.getProperties().put("isActive", true);
                 button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #fafafa; -fx-background-radius: 10; -fx-border-radius: 10;");
             } else {
                 // Botones inactivos
+                button.getProperties().put("isActive", false);
                 button.setStyle("-fx-background-color: transparent; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
             }
         }
