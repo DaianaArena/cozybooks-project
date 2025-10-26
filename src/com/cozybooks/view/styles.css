@@ -2,7 +2,7 @@
 
 /* Colores principales */
 .root {
-    -fx-background-color: #e6e4ce;
+    -fx-background-color: #faf8d4;
 }
 
 /* Botones con bordes redondeados */
@@ -18,7 +18,7 @@
 
 /* Tarjetas con sombra */
 .card {
-    -fx-background-color: #ede3e9;
+    -fx-background-color: #f3f6f4;
     -fx-background-radius: 15;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
 }
@@ -28,7 +28,7 @@
     -fx-background-radius: 8;
     -fx-border-radius: 8;
     -fx-background-color: #faf8d4;
-    -fx-border-color: #c3baaa;
+    -fx-border-color: #ebdccb;
     -fx-border-width: 1;
 }
 
@@ -42,13 +42,13 @@
     -fx-background-color: #faf8d4;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
-    -fx-border-color: #c3baaa;
+    -fx-border-color: #ebdccb;
     -fx-border-width: 1;
 }
 
 .table-view .column-header {
-    -fx-background-color: #c09bd8;
-    -fx-text-fill: white;
+    -fx-background-color: #9f84bd;
+    -fx-text-fill: #181818;
     -fx-font-weight: bold;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .table-row-cell:selected {
-    -fx-background-color: #ebc3db;
+    -fx-background-color: #ebdccb;
 }
 
 /* Alertas */
@@ -69,7 +69,7 @@
 
 /* Scrollbars */
 .scroll-bar {
-    -fx-background-color: #c3baaa;
+    -fx-background-color: #ebdccb;
     -fx-background-radius: 5;
 }
 
@@ -80,25 +80,25 @@
 
 /* Labels */
 .label {
-    -fx-text-fill: #91818a;
+    -fx-text-fill: #181818;
 }
 
 /* Títulos */
 .title {
     -fx-font-size: 24;
     -fx-font-weight: bold;
-    -fx-text-fill: #91818a;
+    -fx-text-fill: #181818;
 }
 
 .subtitle {
     -fx-font-size: 16;
-    -fx-text-fill: #c3baaa;
+    -fx-text-fill: #ebc3db;
 }
 
 /* Botones de acción */
 .action-button {
     -fx-background-color: #9f84bd;
-    -fx-text-fill: white;
+    -fx-text-fill: #181818;
     -fx-font-weight: bold;
     -fx-background-radius: 8;
     -fx-padding: 10 20;
@@ -111,7 +111,7 @@
 /* Botones secundarios */
 .secondary-button {
     -fx-background-color: #ebc3db;
-    -fx-text-fill: #91818a;
+    -fx-text-fill: #181818;
     -fx-font-weight: bold;
     -fx-background-radius: 8;
     -fx-padding: 8 16;
@@ -137,7 +137,7 @@
 
 /* Paneles */
 .panel {
-    -fx-background-color: #ede3e9;
+    -fx-background-color: #f3f6f4;
     -fx-background-radius: 10;
     -fx-padding: 20;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);
@@ -145,7 +145,7 @@
 
 /* Sidebar */
 .sidebar {
-    -fx-background-color: #c09bd8;
+    -fx-background-color: #f3f6f4;
     -fx-background-radius: 0 15 15 0;
 }
 
@@ -158,18 +158,18 @@
 /* Elementos activos */
 .active {
     -fx-background-color: #9f84bd;
-    -fx-text-fill: white;
+    -fx-text-fill: #181818;
 }
 
 /* Elementos inactivos */
 .inactive {
     -fx-background-color: transparent;
-    -fx-text-fill: #91818a;
+    -fx-text-fill: #181818;
 }
 
 /* Hover effects */
 .hoverable:hover {
-    -fx-background-color: rgba(159, 132, 189, 0.3);
+    -fx-background-color: #ebdccb;
 }
 
 /* Tags */
@@ -180,16 +180,16 @@
 }
 
 .tag-available {
-    -fx-background-color: #ebdccb;
-    -fx-text-fill: #91818a;
+    -fx-background-color: #ebc3db;
+    -fx-text-fill: #181818;
 }
 
 .tag-unavailable {
     -fx-background-color: #ebc3db;
-    -fx-text-fill: #91818a;
+    -fx-text-fill: #181818;
 }
 
 .tag-format {
-    -fx-background-color: #c3baaa;
-    -fx-text-fill: white;
+    -fx-background-color: #ebdccb;
+    -fx-text-fill: #181818;
 }

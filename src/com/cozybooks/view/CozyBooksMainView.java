@@ -67,7 +67,7 @@ public class CozyBooksMainView extends Application {
     
     private void setupUI() {
         root = new BorderPane();
-        root.setStyle("-fx-background-color: #e6e4ce;");
+        root.setStyle("-fx-background-color: #faf8d4;");
         
         // Crear header
         HBox header = createHeader();
@@ -79,7 +79,7 @@ public class CozyBooksMainView extends Application {
         
         // Crear área de contenido
         contentArea = new VBox();
-        contentArea.setStyle("-fx-background-color: #e6e4ce;");
+        contentArea.setStyle("-fx-background-color: #faf8d4;");
         contentArea.setPadding(new Insets(20));
         root.setCenter(contentArea);
         
@@ -115,7 +115,7 @@ public class CozyBooksMainView extends Application {
         
         Text logo = new Text("CozyBooks");
         logo.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        logo.setStyle("-fx-fill: #91818a;");
+        logo.setStyle("-fx-fill: #181818;");
         
         logoContainer.getChildren().add(logo);
         
@@ -128,18 +128,18 @@ public class CozyBooksMainView extends Application {
         headerIcons.setAlignment(Pos.CENTER_RIGHT);
         
         // Icono de notificaciones
-        Button notificationBtn = createIconButton("🔔", "#b2a3b5");
+        Button notificationBtn = createIconButton("🔔", "#181818");
         
         // Icono de configuración
-        Button settingsBtn = createIconButton("⚙️", "#b2a3b5");
+        Button settingsBtn = createIconButton("⚙️", "#181818");
         
         // Usuario
         HBox userInfo = new HBox(8);
         userInfo.setAlignment(Pos.CENTER);
-        Button userBtn = createIconButton("👤", "#b2a3b5");
+        Button userBtn = createIconButton("👤", "#181818");
         Text userText = new Text("Admin");
         userText.setFont(Font.font("Arial", 14));
-        userText.setStyle("-fx-fill: #b2a3b5;");
+        userText.setStyle("-fx-fill: #181818;");
         userInfo.getChildren().addAll(userBtn, userText);
         
         headerIcons.getChildren().addAll(notificationBtn, settingsBtn, userInfo);
@@ -150,7 +150,7 @@ public class CozyBooksMainView extends Application {
     
     private VBox createSidebar() {
         VBox sidebar = new VBox();
-        sidebar.setStyle("-fx-background-color: #c09bd8; -fx-padding: 20;");
+        sidebar.setStyle("-fx-background-color: #f3f6f4; -fx-padding: 20;");
         sidebar.setSpacing(10);
         sidebar.setPrefWidth(250);
         
@@ -183,20 +183,20 @@ public class CozyBooksMainView extends Application {
         button.setAlignment(Pos.CENTER_LEFT);
         
         if (isActive) {
-            button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 10; -fx-border-radius: 10;");
+            button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
         } else {
-            button.setStyle("-fx-background-color: transparent; -fx-text-fill: #91818a; -fx-background-radius: 10; -fx-border-radius: 10;");
+            button.setStyle("-fx-background-color: transparent; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
         }
         
         button.setOnMouseEntered(e -> {
             if (!isActive) {
-                button.setStyle("-fx-background-color: rgba(159, 132, 189, 0.3); -fx-text-fill: #91818a; -fx-background-radius: 10; -fx-border-radius: 10;");
+                button.setStyle("-fx-background-color: #ebdccb; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
             }
         });
         
         button.setOnMouseExited(e -> {
             if (!isActive) {
-                button.setStyle("-fx-background-color: transparent; -fx-text-fill: #91818a; -fx-background-radius: 10; -fx-border-radius: 10;");
+                button.setStyle("-fx-background-color: transparent; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
             }
         });
         
@@ -217,11 +217,11 @@ public class CozyBooksMainView extends Application {
         VBox titleSection = new VBox(5);
         Text title = new Text("Dashboard");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 32));
-        title.setStyle("-fx-fill: #91818a;");
+        title.setStyle("-fx-fill: #181818;");
         
         Text subtitle = new Text("Bienvenido al sistema de gestión de CozyBooks");
         subtitle.setFont(Font.font("Arial", 16));
-        subtitle.setStyle("-fx-fill: #91818a;");
+        subtitle.setStyle("-fx-fill: #181818;");
         
         titleSection.getChildren().addAll(title, subtitle);
         contentArea.getChildren().add(titleSection);
@@ -266,7 +266,7 @@ public class CozyBooksMainView extends Application {
     
     private VBox createSummaryCard(String icon, String number, String label) {
         VBox card = new VBox(10);
-        card.setStyle("-fx-background-color: #ede3e9; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        card.setStyle("-fx-background-color: #f3f6f4; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
         card.setAlignment(Pos.CENTER);
         card.setPrefWidth(200);
         
@@ -276,11 +276,11 @@ public class CozyBooksMainView extends Application {
         
         Text numberText = new Text(number);
         numberText.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        numberText.setStyle("-fx-fill: #91818a;");
+        numberText.setStyle("-fx-fill: #181818;");
         
         Text labelText = new Text(label);
         labelText.setFont(Font.font("Arial", 12));
-        labelText.setStyle("-fx-fill: #c3baaa;");
+        labelText.setStyle("-fx-fill: #ebc3db;");
         labelText.setTextAlignment(TextAlignment.CENTER);
         
         card.getChildren().addAll(iconText, numberText, labelText);
@@ -298,14 +298,14 @@ public class CozyBooksMainView extends Application {
         
         Text title = new Text("Libros Recientes");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        title.setStyle("-fx-fill: #91818a;");
+        title.setStyle("-fx-fill: #181818;");
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
         Text seeAll = new Text("Ver todos");
         seeAll.setFont(Font.font("Arial", 12));
-        seeAll.setStyle("-fx-fill: #91818a; -fx-underline: true;");
+        seeAll.setStyle("-fx-fill: #181818; -fx-underline: true;");
         
         titleRow.getChildren().addAll(title, spacer, seeAll);
         
@@ -329,18 +329,18 @@ public class CozyBooksMainView extends Application {
     
     private HBox createBookItem(String title, String author, String format, String status) {
         HBox item = new HBox(15);
-        item.setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
+        item.setStyle("-fx-background-color: #f3f6f4; -fx-background-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
         item.setAlignment(Pos.CENTER_LEFT);
         
         VBox bookInfo = new VBox(5);
         
         Text titleText = new Text(title);
         titleText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        titleText.setStyle("-fx-fill: #91818a;");
+        titleText.setStyle("-fx-fill: #181818;");
         
         Text authorText = new Text(author);
         authorText.setFont(Font.font("Arial", 12));
-        authorText.setStyle("-fx-fill: #91818a;");
+        authorText.setStyle("-fx-fill: #181818;");
         
         bookInfo.getChildren().addAll(titleText, authorText);
         
@@ -351,13 +351,13 @@ public class CozyBooksMainView extends Application {
         HBox tags = new HBox(8);
         
         Label formatTag = new Label(format);
-        formatTag.setStyle("-fx-background-color: #c3baaa; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+        formatTag.setStyle("-fx-background-color: #ebdccb; -fx-text-fill: #181818; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
         
         Label statusTag = new Label(status);
         if (status.equals("Disponible")) {
-            statusTag.setStyle("-fx-background-color: #ebdccb; -fx-text-fill: #91818a; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+            statusTag.setStyle("-fx-background-color: #ebc3db; -fx-text-fill: #181818; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
         } else {
-            statusTag.setStyle("-fx-background-color: #ebc3db; -fx-text-fill: #91818a; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+            statusTag.setStyle("-fx-background-color: #ebc3db; -fx-text-fill: #181818; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
         }
         
         tags.getChildren().addAll(formatTag, statusTag);
@@ -372,7 +372,7 @@ public class CozyBooksMainView extends Application {
         
         Text title = new Text("Acciones Rápidas");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        title.setStyle("-fx-fill: #91818a;");
+        title.setStyle("-fx-fill: #181818;");
         
         // Grid de botones 2x2
         GridPane buttonGrid = new GridPane();
@@ -409,22 +409,22 @@ public class CozyBooksMainView extends Application {
         
         Text labelText = new Text(label);
         labelText.setFont(Font.font("Arial", 12));
-        labelText.setStyle("-fx-fill: #91818a;");
+        labelText.setStyle("-fx-fill: #181818;");
         labelText.setTextAlignment(TextAlignment.CENTER);
         
         buttonContent.getChildren().addAll(iconText, labelText);
         
         Button button = new Button();
         button.setGraphic(buttonContent);
-        button.setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
+        button.setStyle("-fx-background-color: #f3f6f4; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
         button.setPrefSize(120, 100);
         
         button.setOnMouseEntered(e -> {
-            button.setStyle("-fx-background-color: #c09bd8; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
+            button.setStyle("-fx-background-color: #ebdccb; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
         });
         
         button.setOnMouseExited(e -> {
-            button.setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
+            button.setStyle("-fx-background-color: #f3f6f4; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);");
         });
         
         return button;
