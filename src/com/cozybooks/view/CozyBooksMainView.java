@@ -485,10 +485,10 @@ public class CozyBooksMainView extends Application {
         buttonGrid.setHgap(15);
         buttonGrid.setVgap(15);
         
-        Button btn1 = createQuickActionButton("➕", "Registrar Libro");
-        Button btn2 = createQuickActionButton("👤", "Nuevo Cliente");
+        Button btn1 = createQuickActionButton("📚", "Registrar Libro");
+        Button btn2 = createQuickActionButton("👥", "Nuevo Cliente");
         Button btn3 = createQuickActionButton("🛒", "Nueva Venta");
-        Button btn4 = createQuickActionButton("✍️", "Crear Autor");
+        Button btn4 = createQuickActionButton("👤", "Crear Autor");
         
         // Eventos
         btn1.setOnAction(e -> showLibros());
