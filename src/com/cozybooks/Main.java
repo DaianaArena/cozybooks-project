@@ -6,6 +6,7 @@ import com.cozybooks.util.DBConnection;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
@@ -19,6 +20,20 @@ public class Main extends Application {
         System.out.println("Iniciando Cozy Books System...");
         
         try {
+            // Configurar el icono de la aplicación
+            try {
+                Image icon = new Image(getClass().getResourceAsStream("view/assets/cozybooksicon.png"));
+                primaryStage.getIcons().add(icon);
+                System.out.println("✓ Icono de la aplicación cargado correctamente.");
+            } catch (Exception e) {
+                System.out.println("⚠ Advertencia: No se pudo cargar el icono de la aplicación: " + e.getMessage());
+            }
+            
+            // Configurar la ventana principal
+            primaryStage.setTitle("Cozy Books - Sistema de Gestión de Librería");
+            primaryStage.setResizable(true);
+            primaryStage.setMaximized(true);
+            
             // Verificar conexión a la base de datos
             System.out.println("Verificando conexión a la base de datos...");
             DBConnection.getConnection();
