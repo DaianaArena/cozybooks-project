@@ -580,4 +580,13 @@ public class VentaController {
             throw new RuntimeException("Error al confirmar venta: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - obtiene el total de ventas del mes actual
+    public BigDecimal obtenerTotalVentasDelMes() {
+        try {
+            return ventaRepository.obtenerTotalVentasDelMes();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener total de ventas del mes: " + e.getMessage());
+        }
+    }
 }

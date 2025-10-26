@@ -133,6 +133,22 @@ public class VentaRepository {
         return null;
     }
 
+    public BigDecimal obtenerTotalVentasDelMes() throws SQLException {
+        String sql = "SELECT COALESCE(SUM(monto), 0) FROM VENTA WHERE " +
+                    "YEAR(fecha) = YEAR(CURDATE()) AND MONTH(fecha) = MONTH(CURDATE())";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getBigDecimal(1);
+            }
+        }
+        
+        return BigDecimal.ZERO;
+    }
+
     private Venta mapearResultSetAVenta(ResultSet rs) throws SQLException {
         Venta venta = new Venta();
         venta.setIdVenta(rs.getInt("id_venta"));

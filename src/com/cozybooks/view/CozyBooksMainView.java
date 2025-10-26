@@ -20,6 +20,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -337,8 +338,17 @@ public class CozyBooksMainView extends Application {
         // Tarjeta 3: Clientes Activos (real desde BD)
         VBox card3 = createSummaryCard("👥", String.format("%,d", totalClientes), "Clientes Activos");
         
-        // Tarjeta 4: Ventas del Mes
-        VBox card4 = createSummaryCard("🛒", "$12,450", "Ventas del Mes");
+        // Obtener total real de ventas del mes desde la base de datos
+        BigDecimal totalVentasMes = BigDecimal.ZERO;
+        try {
+            totalVentasMes = ventaController.obtenerTotalVentasDelMes();
+        } catch (Exception e) {
+            System.out.println("Error al obtener total de ventas del mes: " + e.getMessage());
+            totalVentasMes = BigDecimal.ZERO;
+        }
+        
+        // Tarjeta 4: Ventas del Mes (real desde BD)
+        VBox card4 = createSummaryCard("🛒", String.format("$%,.2f", totalVentasMes), "Ventas del Mes");
         
         // Hacer que las tarjetas ocupen todo el ancho disponible
         HBox.setHgrow(card1, Priority.ALWAYS);
