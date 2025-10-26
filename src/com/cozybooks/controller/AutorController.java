@@ -374,4 +374,13 @@ public class AutorController {
             return null;
         }
     }
+    
+    // Método para JavaFX - obtiene el total de autores
+    public int obtenerTotalAutores() {
+        try {
+            return autorRepository.contarTotal();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener total de autores: " + e.getMessage());
+        }
+    }
 }

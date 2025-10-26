@@ -148,6 +148,21 @@ public class AutorRepository {
         
         return false;
     }
+    
+    public int contarTotal() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM AUTOR";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        
+        return 0;
+    }
 
     private Autor mapearResultSetAAutor(ResultSet rs) throws SQLException {
         Autor autor = new Autor();
