@@ -333,4 +333,13 @@ public class ClienteController {
             throw new RuntimeException("Error al buscar cliente: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - obtiene el total de clientes
+    public int obtenerTotalClientes() {
+        try {
+            return clienteRepository.contarTotal();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener total de clientes: " + e.getMessage());
+        }
+    }
 }

@@ -210,6 +210,21 @@ public class ClienteRepository {
         
         return false;
     }
+    
+    public int contarTotal() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM CLIENTE";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        
+        return 0;
+    }
 
     private Cliente mapearResultSetACliente(ResultSet rs) throws SQLException {
         Cliente cliente = new Cliente();

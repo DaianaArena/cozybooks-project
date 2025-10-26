@@ -325,8 +325,17 @@ public class CozyBooksMainView extends Application {
         // Tarjeta 2: Autores Registrados (real desde BD)
         VBox card2 = createSummaryCard("👤", String.format("%,d", totalAutores), "Autores Registrados");
         
-        // Tarjeta 3: Clientes Activos
-        VBox card3 = createSummaryCard("👥", "1,234", "Clientes Activos");
+        // Obtener total real de clientes desde la base de datos
+        int totalClientes = 0;
+        try {
+            totalClientes = clienteController.obtenerTotalClientes();
+        } catch (Exception e) {
+            System.out.println("Error al obtener total de clientes: " + e.getMessage());
+            totalClientes = 0;
+        }
+        
+        // Tarjeta 3: Clientes Activos (real desde BD)
+        VBox card3 = createSummaryCard("👥", String.format("%,d", totalClientes), "Clientes Activos");
         
         // Tarjeta 4: Ventas del Mes
         VBox card4 = createSummaryCard("🛒", "$12,450", "Ventas del Mes");
