@@ -274,12 +274,19 @@ public class CozyBooksMainView extends Application {
         // Sección inferior
         HBox bottomSection = new HBox(20);
         bottomSection.setSpacing(20);
+        bottomSection.getStyleClass().add("bottom-section-container");
         
         // Libros recientes
         VBox recentBooks = createRecentBooksSection();
+        recentBooks.getStyleClass().add("libros-recientes");
         
         // Acciones rápidas
         VBox quickActions = createQuickActionsSection();
+        quickActions.getStyleClass().add("acciones-rapidas");
+        
+        // Hacer que ambas secciones ocupen el mismo espacio (50% cada una)
+        HBox.setHgrow(recentBooks, Priority.ALWAYS);
+        HBox.setHgrow(quickActions, Priority.ALWAYS);
         
         bottomSection.getChildren().addAll(recentBooks, quickActions);
         contentArea.getChildren().add(bottomSection);
@@ -335,7 +342,6 @@ public class CozyBooksMainView extends Application {
     
     private VBox createRecentBooksSection() {
         VBox section = new VBox(15);
-        section.setPrefWidth(400);
         
         // Título de la sección
         HBox titleRow = new HBox();
@@ -414,7 +420,6 @@ public class CozyBooksMainView extends Application {
     
     private VBox createQuickActionsSection() {
         VBox section = new VBox(15);
-        section.setPrefWidth(300);
         
         Text title = new Text("Acciones Rápidas");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 18));

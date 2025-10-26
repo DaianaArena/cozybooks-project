@@ -194,3 +194,24 @@
     -fx-background-color: #ebdccb;
     -fx-text-fill: #181818;
 }
+
+/* Secciones del Dashboard */
+.bottom-section-container {
+    -fx-background-color: #ff0000; /* Rojo brillante */
+    -fx-max-width: infinity; /* width 100% */
+    -fx-min-width: 0; /* Permite que se expanda */
+    -fx-spacing: 20; /* space between */
+}
+
+.libros-recientes {
+    -fx-background-color: #00ff00; /* Verde */
+    -fx-min-width: 0; /* Permite que se expanda */
+    -fx-max-width: infinity; /* Se expande para ocupar el espacio disponible */
+}
+
+.acciones-rapidas {
+    -fx-background-color: #0000ff; /* Azul */
+    -fx-min-width: 0; /* Permite que se expanda */
+    -fx-max-width: infinity; /* Se expande para ocupar el espacio disponible */
+}
+
