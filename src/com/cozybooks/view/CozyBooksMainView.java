@@ -43,8 +43,8 @@ public class CozyBooksMainView extends Application {
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Cozy Books System - Sistema de Gestión de Librería");
-        this.primaryStage.setMinWidth(1000);
-        this.primaryStage.setMinHeight(700);
+        this.primaryStage.setMinWidth(1250);
+        this.primaryStage.setMinHeight(650);
         
         // Inicializar controladores
         autorController = new AutorController();
