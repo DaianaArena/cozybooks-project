@@ -22,7 +22,7 @@ public class Main extends Application {
         try {
             // Configurar el icono de la aplicación
             try {
-                Image icon = new Image(getClass().getResourceAsStream("view/assets/cozybooksicon.png"));
+                Image icon = new Image(getClass().getResourceAsStream("view/assets/book-icon.png"));
                 primaryStage.getIcons().add(icon);
                 System.out.println("✓ Icono de la aplicación cargado correctamente.");
             } catch (Exception e) {
@@ -44,6 +44,9 @@ public class Main extends Application {
                 // Iniciar la aplicación JavaFX
                 CozyBooksMainView mainView = new CozyBooksMainView();
                 mainView.start(primaryStage);
+                
+                // Mostrar la ventana maximizada
+                primaryStage.show();
                 
             } else {
                 System.out.println("✗ Error: No se pudo establecer conexión con la base de datos.");
