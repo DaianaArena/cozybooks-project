@@ -61,28 +61,214 @@ public class LibroView {
     }
     
     private void setupUI() {
-        mainContainer = new VBox(20);
-        mainContainer.setPadding(new Insets(20));
-        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        mainContainer = new VBox(0);
+        mainContainer.setStyle("-fx-background-color: #faf8d4;");
+        
+        // Header con título, buscador y botón crear
+        HBox header = createHeader();
+        
+        // Tabla principal que ocupa todo el ancho
+        VBox tableContainer = createTableContainer();
+        
+        mainContainer.getChildren().addAll(header, tableContainer);
+    }
+    
+    private HBox createHeader() {
+        HBox header = new HBox(20);
+        header.setPadding(new Insets(20));
+        header.setStyle("-fx-background-color: #ede3e9; -fx-background-radius: 0 0 15 15;");
+        header.setAlignment(Pos.CENTER_LEFT);
         
         // Título
         Text title = new Text("Gestión de Libros");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 28));
-        title.setStyle("-fx-fill: #2c3e50;");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        title.setStyle("-fx-fill: #181818;");
         
-        // Crear el layout principal con split pane
-        SplitPane splitPane = new SplitPane();
-        splitPane.setDividerPositions(0.6);
+        // Spacer para empujar elementos a la derecha
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        // Panel izquierdo - Tabla de libros
-        VBox leftPanel = createTablePanel();
+        // Buscador
+        TextField searchField = new TextField();
+        searchField.setPromptText("Buscar por título, ISBN o género...");
+        searchField.setPrefWidth(300);
+        searchField.setStyle("-fx-background-color: #faf8d4; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;");
         
-        // Panel derecho - Formulario
-        VBox rightPanel = createFormPanel();
+        // Botón de búsqueda
+        Button searchButton = new Button("🔍");
+        searchButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 12;");
+        searchButton.setOnAction(e -> searchLibros(searchField.getText()));
         
-        splitPane.getItems().addAll(leftPanel, rightPanel);
+        // Botón crear libro
+        Button createButton = new Button("➕ NUEVO LIBRO");
+        createButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        createButton.setOnAction(e -> showCreateForm());
         
-        mainContainer.getChildren().addAll(title, splitPane);
+        HBox searchContainer = new HBox(8);
+        searchContainer.getChildren().addAll(searchField, searchButton);
+        
+        header.getChildren().addAll(title, spacer, searchContainer, createButton);
+        
+        return header;
+    }
+    
+    private VBox createTableContainer() {
+        VBox container = new VBox(0);
+        container.setPadding(new Insets(20));
+        
+        // Tabla de libros
+        libroTable = new TableView<>();
+        libroTable.setItems(libroData);
+        libroTable.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        libroTable.setRowFactory(tv -> {
+            TableRow<Libro> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    Libro libro = row.getItem();
+                    editLibro(libro);
+                }
+            });
+            return row;
+        });
+        
+        // Configurar columnas
+        setupTableColumns();
+        
+        // Hacer que la tabla ocupe todo el ancho disponible
+        VBox.setVgrow(libroTable, Priority.ALWAYS);
+        
+        container.getChildren().add(libroTable);
+        
+        return container;
+    }
+    
+    private void setupTableColumns() {
+        // Limpiar columnas existentes
+        libroTable.getColumns().clear();
+        
+        // ID
+        TableColumn<Libro, Integer> idColumn = new TableColumn<>("ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("idLibro"));
+        idColumn.setPrefWidth(80);
+        idColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Título
+        TableColumn<Libro, String> tituloColumn = new TableColumn<>("TÍTULO");
+        tituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+        tituloColumn.setPrefWidth(250);
+        
+        // Editorial
+        TableColumn<Libro, String> editorialColumn = new TableColumn<>("EDITORIAL");
+        editorialColumn.setCellValueFactory(new PropertyValueFactory<>("editorial"));
+        editorialColumn.setPrefWidth(150);
+        
+        // Año
+        TableColumn<Libro, Integer> añoColumn = new TableColumn<>("AÑO");
+        añoColumn.setCellValueFactory(new PropertyValueFactory<>("año"));
+        añoColumn.setPrefWidth(80);
+        añoColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Precio
+        TableColumn<Libro, BigDecimal> precioColumn = new TableColumn<>("PRECIO");
+        precioColumn.setCellValueFactory(new PropertyValueFactory<>("precio"));
+        precioColumn.setPrefWidth(100);
+        precioColumn.setStyle("-fx-alignment: CENTER_RIGHT;");
+        precioColumn.setCellFactory(column -> new TableCell<Libro, BigDecimal>() {
+            @Override
+            protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("$%,.2f", item));
+                }
+            }
+        });
+        
+        // Tipo
+        TableColumn<Libro, Libro.TipoLibro> tipoColumn = new TableColumn<>("TIPO");
+        tipoColumn.setCellValueFactory(new PropertyValueFactory<>("tipoLibro"));
+        tipoColumn.setPrefWidth(120);
+        tipoColumn.setStyle("-fx-alignment: CENTER;");
+        tipoColumn.setCellFactory(column -> new TableCell<Libro, Libro.TipoLibro>() {
+            @Override
+            protected void updateItem(Libro.TipoLibro item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    String tipo = item.toString();
+                    if (tipo.equals("FISICO")) tipo = "Físico";
+                    else if (tipo.equals("DIGITAL")) tipo = "Digital";
+                    else if (tipo.equals("AUDIOLIBRO")) tipo = "Audiolibro";
+                    
+                    setText(tipo);
+                    setStyle("-fx-background-color: #ebdccb; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+                }
+            }
+        });
+        
+        // Stock
+        TableColumn<Libro, Integer> stockColumn = new TableColumn<>("STOCK");
+        stockColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
+        stockColumn.setPrefWidth(80);
+        stockColumn.setStyle("-fx-alignment: CENTER;");
+        stockColumn.setCellFactory(column -> new TableCell<Libro, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item.toString());
+                    if (item <= 0) {
+                        setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+                    } else {
+                        setStyle("-fx-background-color: #ebc3db; -fx-background-radius: 5; -fx-padding: 2 8; -fx-font-size: 10;");
+                    }
+                }
+            }
+        });
+        
+        // Acciones
+        TableColumn<Libro, Void> actionsColumn = new TableColumn<>("ACCIONES");
+        actionsColumn.setPrefWidth(120);
+        actionsColumn.setStyle("-fx-alignment: CENTER;");
+        actionsColumn.setCellFactory(param -> new TableCell<Libro, Void>() {
+            private final Button editButton = new Button("✏️");
+            private final Button deleteButton = new Button("🗑️");
+            
+            {
+                editButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 6 12; -fx-font-size: 12;");
+                deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 6 12; -fx-font-size: 12;");
+                
+                editButton.setOnAction(e -> {
+                    Libro libro = getTableView().getItems().get(getIndex());
+                    editLibro(libro);
+                });
+                
+                deleteButton.setOnAction(e -> {
+                    Libro libro = getTableView().getItems().get(getIndex());
+                    deleteLibro(libro);
+                });
+            }
+            
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox buttons = new HBox(8, editButton, deleteButton);
+                    buttons.setAlignment(Pos.CENTER);
+                    setGraphic(buttons);
+                }
+            }
+        });
+        
+        libroTable.getColumns().addAll(idColumn, tituloColumn, editorialColumn, añoColumn, precioColumn, tipoColumn, stockColumn, actionsColumn);
     }
     
     private VBox createTablePanel() {
@@ -731,6 +917,50 @@ public class LibroView {
         Scene scene = new Scene(mainContainer);
         resultadosStage.setScene(scene);
         resultadosStage.show();
+    }
+    
+    private void searchLibros(String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                loadLibros(); // Si no hay criterio, cargar todos
+                return;
+            }
+            
+            List<Libro> resultados = libroController.buscarLibros(criterio.trim());
+            libroData.clear();
+            libroData.addAll(resultados);
+            
+            if (resultados.isEmpty()) {
+                showAlert("Búsqueda", "No se encontraron libros con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+            }
+        } catch (Exception e) {
+            showAlert("Error", "Error al buscar libros: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+    
+    private void showCreateForm() {
+        // Crear un diálogo modal para el formulario de creación
+        Stage formStage = new Stage();
+        formStage.setTitle("Nuevo Libro");
+        formStage.setResizable(false);
+        
+        VBox formContainer = new VBox(20);
+        formContainer.setPadding(new Insets(30));
+        formContainer.setStyle("-fx-background-color: #faf8d4;");
+        
+        // Título
+        Text title = new Text("Crear Nuevo Libro");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        title.setStyle("-fx-fill: #181818;");
+        
+        // Formulario (reutilizar el panel de formulario existente)
+        VBox formPanel = createFormPanel();
+        
+        formContainer.getChildren().addAll(title, formPanel);
+        
+        Scene scene = new Scene(formContainer, 500, 600);
+        formStage.setScene(scene);
+        formStage.show();
     }
     
     private void showAlert(String title, String message, Alert.AlertType type) {
