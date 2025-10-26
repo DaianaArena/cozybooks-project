@@ -45,6 +45,9 @@ public class CozyBooksMainView extends Application {
     private LibroView libroView;
     private VentaView ventaView;
     
+    // Botones del menú para controlar el estado activo
+    private List<Button> menuButtons;
+    
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -166,7 +169,7 @@ public class CozyBooksMainView extends Application {
         Button reportesBtn = createMenuButton("📈 Reportes", false);
         
         // Lista de botones para manejar la selección
-        List<Button> menuButtons = List.of(dashboardBtn, librosBtn, autoresBtn, clientesBtn, ventasBtn, reportesBtn);
+        this.menuButtons = List.of(dashboardBtn, librosBtn, autoresBtn, clientesBtn, ventasBtn, reportesBtn);
         
         // Eventos de los botones
         dashboardBtn.setOnAction(e -> {
@@ -368,7 +371,10 @@ public class CozyBooksMainView extends Application {
         
         Text seeAll = new Text("Ver todos");
         seeAll.setFont(Font.font("Arial", 12));
-        seeAll.setStyle("-fx-fill: #181818; -fx-underline: true;");
+        seeAll.setStyle("-fx-fill: #181818; -fx-underline: true; -fx-cursor: hand;");
+        
+        // Hacer que "Ver todos" sea clickeable
+        seeAll.setOnMouseClicked(e -> showLibros());
         
         titleRow.getChildren().addAll(title, spacer, seeAll);
         
@@ -533,6 +539,11 @@ public class CozyBooksMainView extends Application {
     private void showLibros() {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(libroView.getView());
+        
+        // Actualizar el estado del botón del menú (librosBtn es el segundo botón, índice 1)
+        if (menuButtons != null && menuButtons.size() > 1) {
+            setActiveButton(menuButtons, menuButtons.get(1));
+        }
     }
     
     private void showAutores() {
