@@ -11,10 +11,13 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -331,20 +334,131 @@ public class AutorView {
         dialog.showAndWait().ifPresent(idStr -> {
             try {
                 int idAutor = Integer.parseInt(idStr);
-                // Llamar al controlador para generar reporte
+                
+                // Obtener información del autor
+                Autor autor = autorController.obtenerAutor(idAutor);
+                if (autor == null) {
+                    showAlert("Error", "No se encontró el autor con ID: " + idAutor, Alert.AlertType.ERROR);
+                    return;
+                }
+                
+                // Obtener libros del autor
                 List<Libro> libros = autorController.reporteLibrosPorAutor(idAutor);
                 
-                if (libros.isEmpty()) {
-                    showAlert("Información", "Este autor no tiene libros registrados", Alert.AlertType.INFORMATION);
-                } else {
-                    showAlert("Información", "Reporte generado correctamente. Total de libros: " + libros.size(), Alert.AlertType.INFORMATION);
-                }
+                // Mostrar reporte detallado
+                showReporteDetallado(autor, libros);
+                
             } catch (NumberFormatException e) {
                 showAlert("Error", "ID inválido", Alert.AlertType.ERROR);
             } catch (Exception e) {
                 showAlert("Error", "Error al generar reporte: " + e.getMessage(), Alert.AlertType.ERROR);
             }
         });
+    }
+    
+    private void showReporteDetallado(Autor autor, List<Libro> libros) {
+        // Crear ventana de reporte
+        Stage reporteStage = new Stage();
+        reporteStage.setTitle("Reporte de Libros por Autor");
+        reporteStage.setWidth(800);
+        reporteStage.setHeight(600);
+        
+        VBox mainContainer = new VBox(20);
+        mainContainer.setPadding(new Insets(20));
+        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        
+        // Información del autor
+        VBox autorInfo = new VBox(10);
+        autorInfo.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        Text autorTitle = new Text("Información del Autor");
+        autorTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        autorTitle.setStyle("-fx-fill: #2c3e50;");
+        
+        Text autorNombre = new Text("Nombre: " + autor.getNombre());
+        autorNombre.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
+        Text autorNacionalidad = new Text("Nacionalidad: " + (autor.getNacionalidad() != null ? autor.getNacionalidad() : "No especificada"));
+        Text autorFecha = new Text("Fecha de nacimiento: " + autor.getFechaNacimiento());
+        
+        autorInfo.getChildren().addAll(autorTitle, autorNombre, autorNacionalidad, autorFecha);
+        
+        // Tabla de libros
+        VBox librosContainer = new VBox(10);
+        librosContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        Text librosTitle = new Text("Libros del Autor");
+        librosTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        librosTitle.setStyle("-fx-fill: #2c3e50;");
+        
+        TableView<Libro> librosTable = new TableView<>();
+        ObservableList<Libro> librosData = FXCollections.observableArrayList(libros);
+        librosTable.setItems(librosData);
+        
+        // Columnas de la tabla
+        TableColumn<Libro, Integer> idColumn = new TableColumn<>("ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("idLibro"));
+        idColumn.setPrefWidth(60);
+        
+        TableColumn<Libro, String> tituloColumn = new TableColumn<>("Título");
+        tituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+        tituloColumn.setPrefWidth(200);
+        
+        TableColumn<Libro, String> editorialColumn = new TableColumn<>("Editorial");
+        editorialColumn.setCellValueFactory(new PropertyValueFactory<>("editorial"));
+        editorialColumn.setPrefWidth(120);
+        
+        TableColumn<Libro, Integer> añoColumn = new TableColumn<>("Año");
+        añoColumn.setCellValueFactory(new PropertyValueFactory<>("año"));
+        añoColumn.setPrefWidth(80);
+        
+        TableColumn<Libro, BigDecimal> precioColumn = new TableColumn<>("Precio");
+        precioColumn.setCellValueFactory(new PropertyValueFactory<>("precio"));
+        precioColumn.setPrefWidth(80);
+        
+        TableColumn<Libro, Libro.TipoLibro> tipoColumn = new TableColumn<>("Tipo");
+        tipoColumn.setCellValueFactory(new PropertyValueFactory<>("tipoLibro"));
+        tipoColumn.setPrefWidth(100);
+        
+        TableColumn<Libro, Integer> stockColumn = new TableColumn<>("Stock");
+        stockColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
+        stockColumn.setPrefWidth(80);
+        
+        librosTable.getColumns().addAll(idColumn, tituloColumn, editorialColumn, añoColumn, precioColumn, tipoColumn, stockColumn);
+        
+        // Resumen
+        VBox resumenContainer = new VBox(10);
+        resumenContainer.setStyle("-fx-background-color: #3498db; -fx-background-radius: 10; -fx-padding: 15;");
+        
+        Text resumenTitle = new Text("Resumen");
+        resumenTitle.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        resumenTitle.setStyle("-fx-fill: white;");
+        
+        long librosFisicos = libros.stream().filter(l -> l.getTipoLibro() == Libro.TipoLibro.FISICO).count();
+        long librosDigitales = libros.stream().filter(l -> l.getTipoLibro() == Libro.TipoLibro.DIGITAL).count();
+        long audiolibros = libros.stream().filter(l -> l.getTipoLibro() == Libro.TipoLibro.AUDIOLIBRO).count();
+        
+        Text totalLibros = new Text("Total de libros: " + libros.size());
+        totalLibros.setStyle("-fx-fill: white;");
+        
+        Text fisicos = new Text("Libros físicos: " + librosFisicos);
+        fisicos.setStyle("-fx-fill: white;");
+        
+        Text digitales = new Text("Libros digitales: " + librosDigitales);
+        digitales.setStyle("-fx-fill: white;");
+        
+        Text audio = new Text("Audiolibros: " + audiolibros);
+        audio.setStyle("-fx-fill: white;");
+        
+        resumenContainer.getChildren().addAll(resumenTitle, totalLibros, fisicos, digitales, audio);
+        
+        librosContainer.getChildren().addAll(librosTitle, librosTable, resumenContainer);
+        
+        mainContainer.getChildren().addAll(autorInfo, librosContainer);
+        
+        Scene scene = new Scene(mainContainer);
+        reporteStage.setScene(scene);
+        reporteStage.show();
     }
     
     private void showAlert(String title, String message, Alert.AlertType type) {

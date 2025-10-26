@@ -9,9 +9,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -340,13 +342,7 @@ public class ClienteView {
                 Cliente cliente = clienteController.buscarCliente(criterio);
                 
                 if (cliente != null) {
-                    showAlert("Cliente Encontrado", 
-                        "ID: " + cliente.getIdCliente() + "\n" +
-                        "Nombre: " + cliente.getNombre() + "\n" +
-                        "Documento: " + cliente.getDocumento() + "\n" +
-                        "Email: " + (cliente.getEmail() != null ? cliente.getEmail() : "No especificado") + "\n" +
-                        "Teléfono: " + (cliente.getTelefono() != null ? cliente.getTelefono() : "No especificado"),
-                        Alert.AlertType.INFORMATION);
+                    showClienteDetallado(cliente);
                 } else {
                     showAlert("Información", "No se encontró ningún cliente con el criterio: " + criterio, Alert.AlertType.INFORMATION);
                 }
@@ -354,6 +350,68 @@ public class ClienteView {
                 showAlert("Error", "Error al buscar cliente: " + e.getMessage(), Alert.AlertType.ERROR);
             }
         });
+    }
+    
+    private void showClienteDetallado(Cliente cliente) {
+        // Crear ventana de detalles del cliente
+        Stage clienteStage = new Stage();
+        clienteStage.setTitle("Detalles del Cliente");
+        clienteStage.setWidth(500);
+        clienteStage.setHeight(400);
+        
+        VBox mainContainer = new VBox(20);
+        mainContainer.setPadding(new Insets(20));
+        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        
+        // Información del cliente
+        VBox clienteInfo = new VBox(15);
+        clienteInfo.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        Text clienteTitle = new Text("Información del Cliente");
+        clienteTitle.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        clienteTitle.setStyle("-fx-fill: #2c3e50;");
+        
+        VBox infoContainer = new VBox(10);
+        
+        Text idText = new Text("ID: " + cliente.getIdCliente());
+        idText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
+        Text nombreText = new Text("Nombre: " + cliente.getNombre());
+        nombreText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
+        Text documentoText = new Text("Documento: " + cliente.getDocumento());
+        Text emailText = new Text("Email: " + (cliente.getEmail() != null ? cliente.getEmail() : "No especificado"));
+        Text telefonoText = new Text("Teléfono: " + (cliente.getTelefono() != null ? cliente.getTelefono() : "No especificado"));
+        
+        String fechaRegistro = cliente.getFechaRegistro() != null ? 
+            cliente.getFechaRegistro().toLocalDate().toString() : "No especificada";
+        Text fechaText = new Text("Fecha de registro: " + fechaRegistro);
+        
+        infoContainer.getChildren().addAll(idText, nombreText, documentoText, emailText, telefonoText, fechaText);
+        
+        // Botones de acción
+        HBox buttonContainer = new HBox(10);
+        buttonContainer.setAlignment(Pos.CENTER);
+        
+        Button editButton = new Button("✏️ Editar");
+        editButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        editButton.setOnAction(e -> {
+            clienteStage.close();
+            editCliente(cliente);
+        });
+        
+        Button closeButton = new Button("❌ Cerrar");
+        closeButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        closeButton.setOnAction(e -> clienteStage.close());
+        
+        buttonContainer.getChildren().addAll(editButton, closeButton);
+        
+        clienteInfo.getChildren().addAll(clienteTitle, infoContainer, buttonContainer);
+        mainContainer.getChildren().add(clienteInfo);
+        
+        Scene scene = new Scene(mainContainer);
+        clienteStage.setScene(scene);
+        clienteStage.show();
     }
     
     private boolean validarDocumento(String documento) {

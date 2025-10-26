@@ -9,9 +9,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -606,12 +608,129 @@ public class LibroView {
                 if (libros.isEmpty()) {
                     showAlert("Información", "No se encontraron libros con el criterio: " + criterio, Alert.AlertType.INFORMATION);
                 } else {
-                    showAlert("Libros Encontrados", "Se encontraron " + libros.size() + " libro(s) con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+                    showLibrosEncontrados(libros, criterio);
                 }
             } catch (Exception e) {
                 showAlert("Error", "Error al buscar libros: " + e.getMessage(), Alert.AlertType.ERROR);
             }
         });
+    }
+    
+    private void showLibrosEncontrados(List<Libro> libros, String criterio) {
+        // Crear ventana de resultados de búsqueda
+        Stage resultadosStage = new Stage();
+        resultadosStage.setTitle("Resultados de Búsqueda");
+        resultadosStage.setWidth(900);
+        resultadosStage.setHeight(600);
+        
+        VBox mainContainer = new VBox(20);
+        mainContainer.setPadding(new Insets(20));
+        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        
+        // Título y resumen
+        VBox headerContainer = new VBox(10);
+        headerContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        Text titleText = new Text("Resultados de Búsqueda");
+        titleText.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        titleText.setStyle("-fx-fill: #2c3e50;");
+        
+        Text criterioText = new Text("Criterio: " + criterio);
+        criterioText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        criterioText.setStyle("-fx-fill: #7f8c8d;");
+        
+        Text cantidadText = new Text("Libros encontrados: " + libros.size());
+        cantidadText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        cantidadText.setStyle("-fx-fill: #27ae60;");
+        
+        headerContainer.getChildren().addAll(titleText, criterioText, cantidadText);
+        
+        // Tabla de libros encontrados
+        VBox tableContainer = new VBox(10);
+        tableContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        TableView<Libro> resultadosTable = new TableView<>();
+        ObservableList<Libro> resultadosData = FXCollections.observableArrayList(libros);
+        resultadosTable.setItems(resultadosData);
+        
+        // Columnas de la tabla
+        TableColumn<Libro, Integer> idColumn = new TableColumn<>("ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("idLibro"));
+        idColumn.setPrefWidth(60);
+        
+        TableColumn<Libro, String> tituloColumn = new TableColumn<>("Título");
+        tituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+        tituloColumn.setPrefWidth(200);
+        
+        TableColumn<Libro, String> isbnColumn = new TableColumn<>("ISBN");
+        isbnColumn.setCellValueFactory(new PropertyValueFactory<>("isbn"));
+        isbnColumn.setPrefWidth(120);
+        
+        TableColumn<Libro, Integer> autorColumn = new TableColumn<>("ID Autor");
+        autorColumn.setCellValueFactory(new PropertyValueFactory<>("idAutor"));
+        autorColumn.setPrefWidth(100);
+        
+        TableColumn<Libro, String> editorialColumn = new TableColumn<>("Editorial");
+        editorialColumn.setCellValueFactory(new PropertyValueFactory<>("editorial"));
+        editorialColumn.setPrefWidth(120);
+        
+        TableColumn<Libro, Integer> añoColumn = new TableColumn<>("Año");
+        añoColumn.setCellValueFactory(new PropertyValueFactory<>("año"));
+        añoColumn.setPrefWidth(80);
+        
+        TableColumn<Libro, BigDecimal> precioColumn = new TableColumn<>("Precio");
+        precioColumn.setCellValueFactory(new PropertyValueFactory<>("precio"));
+        precioColumn.setPrefWidth(80);
+        
+        TableColumn<Libro, Libro.TipoLibro> tipoColumn = new TableColumn<>("Tipo");
+        tipoColumn.setCellValueFactory(new PropertyValueFactory<>("tipoLibro"));
+        tipoColumn.setPrefWidth(100);
+        
+        TableColumn<Libro, Integer> stockColumn = new TableColumn<>("Stock");
+        stockColumn.setCellValueFactory(new PropertyValueFactory<>("stock"));
+        stockColumn.setPrefWidth(80);
+        
+        resultadosTable.getColumns().addAll(idColumn, tituloColumn, isbnColumn, autorColumn, editorialColumn, añoColumn, precioColumn, tipoColumn, stockColumn);
+        
+        // Resumen por tipo
+        VBox resumenContainer = new VBox(10);
+        resumenContainer.setStyle("-fx-background-color: #3498db; -fx-background-radius: 10; -fx-padding: 15;");
+        
+        Text resumenTitle = new Text("Resumen por Tipo");
+        resumenTitle.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        resumenTitle.setStyle("-fx-fill: white;");
+        
+        long librosFisicos = libros.stream().filter(l -> l.getTipoLibro() == Libro.TipoLibro.FISICO).count();
+        long librosDigitales = libros.stream().filter(l -> l.getTipoLibro() == Libro.TipoLibro.DIGITAL).count();
+        long audiolibros = libros.stream().filter(l -> l.getTipoLibro() == Libro.TipoLibro.AUDIOLIBRO).count();
+        
+        Text fisicos = new Text("Libros físicos: " + librosFisicos);
+        fisicos.setStyle("-fx-fill: white;");
+        
+        Text digitales = new Text("Libros digitales: " + librosDigitales);
+        digitales.setStyle("-fx-fill: white;");
+        
+        Text audio = new Text("Audiolibros: " + audiolibros);
+        audio.setStyle("-fx-fill: white;");
+        
+        resumenContainer.getChildren().addAll(resumenTitle, fisicos, digitales, audio);
+        
+        // Botón cerrar
+        HBox buttonContainer = new HBox();
+        buttonContainer.setAlignment(Pos.CENTER);
+        
+        Button closeButton = new Button("❌ Cerrar");
+        closeButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        closeButton.setOnAction(e -> resultadosStage.close());
+        
+        buttonContainer.getChildren().add(closeButton);
+        
+        tableContainer.getChildren().addAll(resultadosTable, resumenContainer, buttonContainer);
+        mainContainer.getChildren().addAll(headerContainer, tableContainer);
+        
+        Scene scene = new Scene(mainContainer);
+        resultadosStage.setScene(scene);
+        resultadosStage.show();
     }
     
     private void showAlert(String title, String message, Alert.AlertType type) {

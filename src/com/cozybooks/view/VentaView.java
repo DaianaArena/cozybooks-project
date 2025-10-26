@@ -1,6 +1,7 @@
 package com.cozybooks.view;
 
 import com.cozybooks.controller.VentaController;
+import com.cozybooks.controller.ClienteController;
 import com.cozybooks.model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,9 +10,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,6 +27,7 @@ import java.util.List;
 public class VentaView {
     
     private VentaController ventaController;
+    private ClienteController clienteController;
     private VBox mainContainer;
     private TableView<Venta> ventaTable;
     private ObservableList<Venta> ventaData;
@@ -44,6 +48,7 @@ public class VentaView {
     
     public VentaView(VentaController ventaController) {
         this.ventaController = ventaController;
+        this.clienteController = new ClienteController();
         this.ventaData = FXCollections.observableArrayList();
         this.detalleData = FXCollections.observableArrayList();
         this.librosVenta = new ArrayList<>();
@@ -346,16 +351,81 @@ public class VentaView {
     
     private void buscarCliente() {
         try {
-            int idCliente = Integer.parseInt(clienteIdField.getText().trim());
-            // Llamar al controlador para buscar cliente
-            // Cliente cliente = clienteController.obtenerCliente(idCliente);
+            String criterio = clienteIdField.getText().trim();
+            if (criterio.isEmpty()) {
+                showAlert("Error", "Debe ingresar un criterio de búsqueda", Alert.AlertType.ERROR);
+                return;
+            }
             
-            showAlert("Información", "Cliente encontrado", Alert.AlertType.INFORMATION);
-        } catch (NumberFormatException e) {
-            showAlert("Error", "ID de cliente inválido", Alert.AlertType.ERROR);
+            // Llamar al controlador para buscar cliente
+            Cliente cliente = clienteController.buscarCliente(criterio);
+            
+            if (cliente != null) {
+                showClienteEncontrado(cliente);
+            } else {
+                showAlert("Información", "No se encontró ningún cliente con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+            }
         } catch (Exception e) {
             showAlert("Error", "Error al buscar cliente: " + e.getMessage(), Alert.AlertType.ERROR);
         }
+    }
+    
+    private void showClienteEncontrado(Cliente cliente) {
+        // Crear ventana de cliente encontrado
+        Stage clienteStage = new Stage();
+        clienteStage.setTitle("Cliente Encontrado");
+        clienteStage.setWidth(500);
+        clienteStage.setHeight(400);
+        
+        VBox mainContainer = new VBox(20);
+        mainContainer.setPadding(new Insets(20));
+        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        
+        // Información del cliente
+        VBox clienteInfo = new VBox(15);
+        clienteInfo.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        Text clienteTitle = new Text("Cliente Encontrado");
+        clienteTitle.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        clienteTitle.setStyle("-fx-fill: #2c3e50;");
+        
+        VBox infoContainer = new VBox(10);
+        
+        Text idText = new Text("ID: " + cliente.getIdCliente());
+        idText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
+        Text nombreText = new Text("Nombre: " + cliente.getNombre());
+        nombreText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
+        Text documentoText = new Text("Documento: " + cliente.getDocumento());
+        Text emailText = new Text("Email: " + (cliente.getEmail() != null ? cliente.getEmail() : "No especificado"));
+        Text telefonoText = new Text("Teléfono: " + (cliente.getTelefono() != null ? cliente.getTelefono() : "No especificado"));
+        
+        infoContainer.getChildren().addAll(idText, nombreText, documentoText, emailText, telefonoText);
+        
+        // Botones de acción
+        HBox buttonContainer = new HBox(10);
+        buttonContainer.setAlignment(Pos.CENTER);
+        
+        Button usarButton = new Button("✅ Usar este Cliente");
+        usarButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        usarButton.setOnAction(e -> {
+            clienteIdField.setText(String.valueOf(cliente.getIdCliente()));
+            clienteStage.close();
+        });
+        
+        Button closeButton = new Button("❌ Cerrar");
+        closeButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        closeButton.setOnAction(e -> clienteStage.close());
+        
+        buttonContainer.getChildren().addAll(usarButton, closeButton);
+        
+        clienteInfo.getChildren().addAll(clienteTitle, infoContainer, buttonContainer);
+        mainContainer.getChildren().add(clienteInfo);
+        
+        Scene scene = new Scene(mainContainer);
+        clienteStage.setScene(scene);
+        clienteStage.show();
     }
     
     private void agregarLibro() {
@@ -488,11 +558,126 @@ public class VentaView {
             if (ventas.isEmpty()) {
                 showAlert("Información", "No se encontraron ventas con el criterio: " + criterio, Alert.AlertType.INFORMATION);
             } else {
-                showAlert("Ventas Encontradas", "Se encontraron " + ventas.size() + " venta(s) con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+                showVentasEncontradas(ventas, criterio);
             }
         } catch (Exception e) {
             showAlert("Error", "Error al buscar ventas: " + e.getMessage(), Alert.AlertType.ERROR);
         }
+    }
+    
+    private void showVentasEncontradas(List<Venta> ventas, String criterio) {
+        // Crear ventana de resultados de búsqueda
+        Stage resultadosStage = new Stage();
+        resultadosStage.setTitle("Resultados de Búsqueda de Ventas");
+        resultadosStage.setWidth(1000);
+        resultadosStage.setHeight(700);
+        
+        VBox mainContainer = new VBox(20);
+        mainContainer.setPadding(new Insets(20));
+        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        
+        // Título y resumen
+        VBox headerContainer = new VBox(10);
+        headerContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        Text titleText = new Text("Resultados de Búsqueda de Ventas");
+        titleText.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        titleText.setStyle("-fx-fill: #2c3e50;");
+        
+        Text criterioText = new Text("Criterio: " + criterio);
+        criterioText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        criterioText.setStyle("-fx-fill: #7f8c8d;");
+        
+        Text cantidadText = new Text("Ventas encontradas: " + ventas.size());
+        cantidadText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        cantidadText.setStyle("-fx-fill: #27ae60;");
+        
+        headerContainer.getChildren().addAll(titleText, criterioText, cantidadText);
+        
+        // Tabla de ventas encontradas
+        VBox tableContainer = new VBox(10);
+        tableContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        TableView<Venta> resultadosTable = new TableView<>();
+        ObservableList<Venta> resultadosData = FXCollections.observableArrayList(ventas);
+        resultadosTable.setItems(resultadosData);
+        
+        // Columnas de la tabla
+        TableColumn<Venta, Integer> idColumn = new TableColumn<>("ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("idVenta"));
+        idColumn.setPrefWidth(60);
+        
+        TableColumn<Venta, Integer> clienteColumn = new TableColumn<>("ID Cliente");
+        clienteColumn.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
+        clienteColumn.setPrefWidth(100);
+        
+        TableColumn<Venta, LocalDateTime> fechaColumn = new TableColumn<>("Fecha");
+        fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fecha"));
+        fechaColumn.setPrefWidth(120);
+        
+        TableColumn<Venta, BigDecimal> totalColumn = new TableColumn<>("Total");
+        totalColumn.setCellValueFactory(new PropertyValueFactory<>("monto"));
+        totalColumn.setPrefWidth(100);
+        
+        TableColumn<Venta, Venta.MetodoPago> metodoColumn = new TableColumn<>("Método Pago");
+        metodoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
+        metodoColumn.setPrefWidth(120);
+        
+        TableColumn<Venta, Venta.EstadoVenta> estadoColumn = new TableColumn<>("Estado");
+        estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
+        estadoColumn.setPrefWidth(100);
+        
+        resultadosTable.getColumns().addAll(idColumn, clienteColumn, fechaColumn, totalColumn, metodoColumn, estadoColumn);
+        
+        // Resumen por método de pago
+        VBox resumenContainer = new VBox(10);
+        resumenContainer.setStyle("-fx-background-color: #3498db; -fx-background-radius: 10; -fx-padding: 15;");
+        
+        Text resumenTitle = new Text("Resumen por Método de Pago");
+        resumenTitle.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        resumenTitle.setStyle("-fx-fill: white;");
+        
+        long efectivo = ventas.stream().filter(v -> v.getMetodoPago() == Venta.MetodoPago.EFECTIVO).count();
+        long tarjeta = ventas.stream().filter(v -> v.getMetodoPago() == Venta.MetodoPago.TARJETA).count();
+        long transferencia = ventas.stream().filter(v -> v.getMetodoPago() == Venta.MetodoPago.TRANSFERENCIA).count();
+        
+        Text efectivoText = new Text("Efectivo: " + efectivo);
+        efectivoText.setStyle("-fx-fill: white;");
+        
+        Text tarjetaText = new Text("Tarjeta: " + tarjeta);
+        tarjetaText.setStyle("-fx-fill: white;");
+        
+        Text transferenciaText = new Text("Transferencia: " + transferencia);
+        transferenciaText.setStyle("-fx-fill: white;");
+        
+        // Calcular total de ventas
+        BigDecimal totalVentas = ventas.stream()
+            .map(Venta::getMonto)
+            .filter(monto -> monto != null)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        Text totalVentasText = new Text("Total de ventas: $" + totalVentas);
+        totalVentasText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        totalVentasText.setStyle("-fx-fill: white;");
+        
+        resumenContainer.getChildren().addAll(resumenTitle, efectivoText, tarjetaText, transferenciaText, totalVentasText);
+        
+        // Botón cerrar
+        HBox buttonContainer = new HBox();
+        buttonContainer.setAlignment(Pos.CENTER);
+        
+        Button closeButton = new Button("❌ Cerrar");
+        closeButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        closeButton.setOnAction(e -> resultadosStage.close());
+        
+        buttonContainer.getChildren().add(closeButton);
+        
+        tableContainer.getChildren().addAll(resultadosTable, resumenContainer, buttonContainer);
+        mainContainer.getChildren().addAll(headerContainer, tableContainer);
+        
+        Scene scene = new Scene(mainContainer);
+        resultadosStage.setScene(scene);
+        resultadosStage.show();
     }
     
     private void showAlert(String title, String message, Alert.AlertType type) {
