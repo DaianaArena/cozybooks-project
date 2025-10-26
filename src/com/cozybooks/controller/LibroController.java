@@ -427,4 +427,13 @@ public class LibroController {
             throw new RuntimeException("Error al buscar libros: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - obtiene el total de libros
+    public int obtenerTotalLibros() {
+        try {
+            return libroRepository.contarTotal();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener total de libros: " + e.getMessage());
+        }
+    }
 }

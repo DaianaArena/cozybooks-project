@@ -296,8 +296,17 @@ public class CozyBooksMainView extends Application {
         HBox cardsContainer = new HBox(20);
         cardsContainer.setPadding(new Insets(20, 0, 40, 0)); // Aumentado margen inferior de 0 a 40
         
-        // Tarjeta 1: Total de Libros
-        VBox card1 = createSummaryCard("📚", "2,847", "Total de Libros");
+        // Obtener total real de libros desde la base de datos
+        int totalLibros = 0;
+        try {
+            totalLibros = libroController.obtenerTotalLibros();
+        } catch (Exception e) {
+            System.out.println("Error al obtener total de libros: " + e.getMessage());
+            totalLibros = 0;
+        }
+        
+        // Tarjeta 1: Total de Libros (real desde BD)
+        VBox card1 = createSummaryCard("📚", String.format("%,d", totalLibros), "Total de Libros");
         
         // Tarjeta 2: Autores Registrados
         VBox card2 = createSummaryCard("👤", "156", "Autores Registrados");

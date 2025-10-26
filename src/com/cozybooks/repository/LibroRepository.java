@@ -246,6 +246,21 @@ public class LibroRepository {
             }
         }
     }
+    
+    public int contarTotal() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM LIBRO";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        
+        return 0;
+    }
 
     private boolean existeIsbn(String isbn) throws SQLException {
         String sql = "SELECT COUNT(*) FROM LIBRO WHERE isbn = ?";
