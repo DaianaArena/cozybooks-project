@@ -2,6 +2,8 @@ package com.cozybooks.view;
 
 import com.cozybooks.controller.AutorController;
 import com.cozybooks.model.Autor;
+import com.cozybooks.model.Libro;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -14,6 +16,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Vista para la gestión de Autores
@@ -221,15 +224,9 @@ public class AutorView {
     
     private void loadAutores() {
         try {
-            // Simular la carga de datos desde el controlador
-            // En una implementación real, esto llamaría a autorController.listar()
             autorData.clear();
-            
-            // Aquí deberías llamar al método del controlador
-            // List<Autor> autores = autorController.listarAutores();
-            // autorData.addAll(autores);
-            
-            showAlert("Información", "Datos cargados correctamente", Alert.AlertType.INFORMATION);
+            List<Autor> autores = autorController.obtenerListaAutores();
+            autorData.addAll(autores);
         } catch (Exception e) {
             showAlert("Error", "Error al cargar autores: " + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -257,22 +254,19 @@ public class AutorView {
                 autorEditando.setBiografia(biografiaArea.getText().trim().isEmpty() ? null : biografiaArea.getText().trim());
                 
                 // Llamar al controlador para actualizar
-                // autorController.actualizarAutor(autorEditando);
+                autorController.actualizarAutor(autorEditando);
                 
                 showAlert("Éxito", "Autor actualizado correctamente", Alert.AlertType.INFORMATION);
             } else {
-                // Crear nuevo autor
-                Autor nuevoAutor = new Autor(
+                // Crear nuevo autor usando el método con parámetros
+                Autor nuevoAutor = autorController.registrarAutor(
                     nombreField.getText().trim(),
                     fechaNacimientoPicker.getValue(),
                     nacionalidadField.getText().trim().isEmpty() ? null : nacionalidadField.getText().trim(),
                     biografiaArea.getText().trim().isEmpty() ? null : biografiaArea.getText().trim()
                 );
                 
-                // Llamar al controlador para registrar
-                // autorController.registrarAutor(nuevoAutor);
-                
-                showAlert("Éxito", "Autor registrado correctamente", Alert.AlertType.INFORMATION);
+                showAlert("Éxito", "Autor registrado correctamente con ID: " + nuevoAutor.getIdAutor(), Alert.AlertType.INFORMATION);
             }
             
             clearForm();
@@ -305,7 +299,7 @@ public class AutorView {
             if (response == ButtonType.OK) {
                 try {
                     // Llamar al controlador para eliminar
-                    // autorController.eliminarAutor(autor.getIdAutor());
+                    autorController.eliminarAutor(autor.getIdAutor());
                     
                     showAlert("Éxito", "Autor eliminado correctamente", Alert.AlertType.INFORMATION);
                     loadAutores();
@@ -338,9 +332,13 @@ public class AutorView {
             try {
                 int idAutor = Integer.parseInt(idStr);
                 // Llamar al controlador para generar reporte
-                // autorController.reporteLibrosPorAutor(idAutor);
+                List<Libro> libros = autorController.reporteLibrosPorAutor(idAutor);
                 
-                showAlert("Información", "Reporte generado correctamente", Alert.AlertType.INFORMATION);
+                if (libros.isEmpty()) {
+                    showAlert("Información", "Este autor no tiene libros registrados", Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("Información", "Reporte generado correctamente. Total de libros: " + libros.size(), Alert.AlertType.INFORMATION);
+                }
             } catch (NumberFormatException e) {
                 showAlert("Error", "ID inválido", Alert.AlertType.ERROR);
             } catch (Exception e) {

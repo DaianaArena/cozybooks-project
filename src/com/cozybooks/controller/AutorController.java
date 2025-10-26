@@ -22,6 +22,7 @@ public class AutorController {
         this.scanner = new Scanner(System.in);
     }
 
+    // Método para consola (original)
     public void registrarAutor() {
         try {
             System.out.println("\n=== REGISTRAR AUTOR ===");
@@ -60,7 +61,30 @@ public class AutorController {
             System.out.println("Error al registrar autor: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - registra autor con parámetros
+    public Autor registrarAutor(String nombre, LocalDate fechaNacimiento, String nacionalidad, String biografia) {
+        try {
+            if (nombre == null || nombre.trim().isEmpty()) {
+                throw new IllegalArgumentException("El nombre es obligatorio.");
+            }
+            
+            if (fechaNacimiento == null) {
+                throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
+            }
+            
+            Autor autor = new Autor(nombre.trim(), fechaNacimiento, 
+                (nacionalidad != null && !nacionalidad.trim().isEmpty()) ? nacionalidad.trim() : null,
+                (biografia != null && !biografia.trim().isEmpty()) ? biografia.trim() : null);
+            
+            return autorRepository.registrar(autor);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al registrar autor: " + e.getMessage());
+        }
+    }
 
+    // Método para consola (original)
     public void actualizarAutor() {
         try {
             System.out.println("\n=== ACTUALIZAR AUTOR ===");
@@ -114,7 +138,26 @@ public class AutorController {
             System.out.println("Error al actualizar autor: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - actualiza autor con objeto
+    public void actualizarAutor(Autor autor) {
+        try {
+            if (autor == null) {
+                throw new IllegalArgumentException("El autor no puede ser nulo.");
+            }
+            
+            if (autor.getIdAutor() <= 0) {
+                throw new IllegalArgumentException("ID de autor inválido.");
+            }
+            
+            autorRepository.actualizar(autor);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar autor: " + e.getMessage());
+        }
+    }
 
+    // Método para consola (original)
     public void eliminarAutor() {
         try {
             System.out.println("\n=== ELIMINAR AUTOR ===");
@@ -145,7 +188,22 @@ public class AutorController {
             System.out.println("Error al eliminar autor: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - elimina autor por ID
+    public void eliminarAutor(int idAutor) {
+        try {
+            if (idAutor <= 0) {
+                throw new IllegalArgumentException("ID de autor inválido.");
+            }
+            
+            autorRepository.eliminar(idAutor);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar autor: " + e.getMessage());
+        }
+    }
 
+    // Método para consola (original)
     public void listarAutores() {
         try {
             System.out.println("\n=== LISTAR AUTORES ===");
@@ -178,7 +236,17 @@ public class AutorController {
             System.out.println("Error al listar autores: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - retorna lista de autores
+    public List<Autor> obtenerListaAutores() {
+        try {
+            return autorRepository.listar();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar autores: " + e.getMessage());
+        }
+    }
 
+    // Método para consola (original)
     public void buscarAutor() {
         try {
             System.out.println("\n=== BUSCAR AUTOR ===");
@@ -209,7 +277,22 @@ public class AutorController {
             System.out.println("Error al buscar autor: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - busca autor por criterio
+    public Autor buscarAutor(String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                throw new IllegalArgumentException("Debe ingresar un criterio de búsqueda.");
+            }
+            
+            return autorRepository.buscar(criterio.trim());
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar autor: " + e.getMessage());
+        }
+    }
 
+    // Método para consola (original)
     public void reporteLibrosPorAutor() {
         try {
             System.out.println("\n=== REPORTE DE LIBROS POR AUTOR ===");
@@ -261,6 +344,25 @@ public class AutorController {
             System.out.println("Error: ID inválido.");
         } catch (Exception e) {
             System.out.println("Error al generar reporte: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - genera reporte de libros por autor
+    public List<Libro> reporteLibrosPorAutor(int idAutor) {
+        try {
+            if (idAutor <= 0) {
+                throw new IllegalArgumentException("ID de autor inválido.");
+            }
+            
+            Autor autor = autorRepository.obtenerPorId(idAutor);
+            if (autor == null) {
+                throw new IllegalArgumentException("No se encontró el autor con ID: " + idAutor);
+            }
+            
+            return libroRepository.buscarPorAutor(idAutor);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al generar reporte: " + e.getMessage());
         }
     }
 

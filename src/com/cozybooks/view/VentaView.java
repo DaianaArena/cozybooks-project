@@ -336,14 +336,9 @@ public class VentaView {
     
     private void loadVentas() {
         try {
-            // Simular la carga de datos desde el controlador
             ventaData.clear();
-            
-            // Aquí deberías llamar al método del controlador
-            // List<Venta> ventas = ventaController.listarVentas();
-            // ventaData.addAll(ventas);
-            
-            showAlert("Información", "Datos cargados correctamente", Alert.AlertType.INFORMATION);
+            List<Venta> ventas = ventaController.obtenerListaVentas();
+            ventaData.addAll(ventas);
         } catch (Exception e) {
             showAlert("Error", "Error al cargar ventas: " + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -458,7 +453,7 @@ public class VentaView {
             if (response == ButtonType.OK) {
                 try {
                     // Llamar al controlador para eliminar
-                    // ventaController.eliminarVenta(venta.getIdVenta());
+                    ventaController.eliminarVenta(venta.getIdVenta());
                     
                     showAlert("Éxito", "Venta eliminada correctamente", Alert.AlertType.INFORMATION);
                     loadVentas();
@@ -488,9 +483,13 @@ public class VentaView {
             }
             
             // Llamar al controlador para buscar
-            // List<Venta> ventas = ventaController.buscarVenta(criterio);
+            List<Venta> ventas = ventaController.buscarVentas(criterio);
             
-            showAlert("Información", "Búsqueda completada", Alert.AlertType.INFORMATION);
+            if (ventas.isEmpty()) {
+                showAlert("Información", "No se encontraron ventas con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("Ventas Encontradas", "Se encontraron " + ventas.size() + " venta(s) con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+            }
         } catch (Exception e) {
             showAlert("Error", "Error al buscar ventas: " + e.getMessage(), Alert.AlertType.ERROR);
         }

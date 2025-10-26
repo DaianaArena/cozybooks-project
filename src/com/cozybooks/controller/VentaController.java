@@ -443,4 +443,141 @@ public class VentaController {
             return null;
         }
     }
+    
+    // ========== MÉTODOS PARA JAVAFX ==========
+    
+    // Método para JavaFX - registra venta con parámetros
+    public Venta registrarVenta(int idCliente, List<DetalleVenta> detalles, Venta.MetodoPago metodoPago) {
+        try {
+            if (idCliente <= 0) {
+                throw new IllegalArgumentException("ID de cliente inválido.");
+            }
+            
+            if (detalles == null || detalles.isEmpty()) {
+                throw new IllegalArgumentException("Debe agregar al menos un libro a la venta.");
+            }
+            
+            if (metodoPago == null) {
+                throw new IllegalArgumentException("Debe seleccionar un método de pago.");
+            }
+            
+            // Crear la venta
+            Venta venta = iniciarVenta(idCliente);
+            
+            // Confirmar la venta con los detalles
+            return confirmarVenta(venta, detalles, metodoPago);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al registrar venta: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - actualiza venta con objeto
+    public void actualizarVenta(Venta venta) {
+        try {
+            if (venta == null) {
+                throw new IllegalArgumentException("La venta no puede ser nula.");
+            }
+            
+            if (venta.getIdVenta() <= 0) {
+                throw new IllegalArgumentException("ID de venta inválido.");
+            }
+            
+            ventaRepository.actualizar(venta);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar venta: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - elimina venta por ID
+    public void eliminarVenta(int idVenta) {
+        try {
+            if (idVenta <= 0) {
+                throw new IllegalArgumentException("ID de venta inválido.");
+            }
+            
+            DBConnection.beginTransaction();
+            
+            try {
+                List<DetalleVenta> detalles = detalleVentaRepository.buscarPorVenta(idVenta);
+                
+                for (DetalleVenta detalle : detalles) {
+                    Libro libro = libroRepository.obtenerPorId(detalle.getIdLibro());
+                    if (libro != null && libro.getTipoLibro() == Libro.TipoLibro.FISICO) {
+                        libroRepository.actualizarStock(libro.getIdLibro(), detalle.getCantidad());
+                    }
+                }
+                
+                ventaRepository.eliminar(idVenta);
+                
+                DBConnection.commitTransaction();
+                
+            } catch (Exception e) {
+                DBConnection.rollbackTransaction();
+                throw e;
+            }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar venta: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - retorna lista de ventas
+    public List<Venta> obtenerListaVentas() {
+        try {
+            return ventaRepository.listar();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar ventas: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - busca ventas por criterio
+    public List<Venta> buscarVentas(String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                throw new IllegalArgumentException("Debe ingresar un criterio de búsqueda.");
+            }
+            
+            return ventaRepository.buscar(criterio.trim());
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar ventas: " + e.getMessage());
+        }
+    }
+    
+    // Método privado para confirmar venta (usado por registrarVenta)
+    private Venta confirmarVenta(Venta venta, List<DetalleVenta> detalles, Venta.MetodoPago metodoPago) {
+        try {
+            DBConnection.beginTransaction();
+            
+            for (DetalleVenta detalle : detalles) {
+                detalleVentaRepository.registrar(detalle);
+                
+                Libro libro = libroRepository.obtenerPorId(detalle.getIdLibro());
+                if (libro != null && libro.getTipoLibro() == Libro.TipoLibro.FISICO) {
+                    libroRepository.actualizarStock(libro.getIdLibro(), -detalle.getCantidad());
+                }
+            }
+
+            BigDecimal total = calcularTotal(detalles);
+            venta.setMonto(total);
+            venta.setMetodoPago(metodoPago);
+            venta.setEstado(Venta.EstadoVenta.COMPLETADA);
+            
+            ventaRepository.actualizar(venta);
+            
+            DBConnection.commitTransaction();
+            
+            return venta;
+            
+        } catch (Exception e) {
+            try {
+                DBConnection.rollbackTransaction();
+            } catch (Exception rollbackEx) {
+                System.out.println("Error al revertir transacción: " + rollbackEx.getMessage());
+            }
+            throw new RuntimeException("Error al confirmar venta: " + e.getMessage());
+        }
+    }
 }

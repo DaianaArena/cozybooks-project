@@ -356,4 +356,75 @@ public class LibroController {
             return null;
         }
     }
+    
+    // ========== MÉTODOS PARA JAVAFX ==========
+    
+    // Método para JavaFX - registra libro con objeto
+    public Libro registrarLibro(Libro libro) {
+        try {
+            if (libro == null) {
+                throw new IllegalArgumentException("El libro no puede ser nulo.");
+            }
+            
+            return libroRepository.registrar(libro);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al registrar libro: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - actualiza libro con objeto
+    public void actualizarLibro(Libro libro) {
+        try {
+            if (libro == null) {
+                throw new IllegalArgumentException("El libro no puede ser nulo.");
+            }
+            
+            if (libro.getIdLibro() <= 0) {
+                throw new IllegalArgumentException("ID de libro inválido.");
+            }
+            
+            libroRepository.actualizar(libro);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar libro: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - elimina libro por ID
+    public void eliminarLibro(int idLibro) {
+        try {
+            if (idLibro <= 0) {
+                throw new IllegalArgumentException("ID de libro inválido.");
+            }
+            
+            libroRepository.eliminar(idLibro);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar libro: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - retorna lista de libros
+    public List<Libro> obtenerListaLibros() {
+        try {
+            return libroRepository.listar();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar libros: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - busca libros por criterio
+    public List<Libro> buscarLibros(String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                throw new IllegalArgumentException("Debe ingresar un criterio de búsqueda.");
+            }
+            
+            return libroRepository.buscar(criterio.trim());
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar libros: " + e.getMessage());
+        }
+    }
 }

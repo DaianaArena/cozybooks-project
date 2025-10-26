@@ -16,6 +16,7 @@ public class ClienteController {
         this.scanner = new Scanner(System.in);
     }
 
+    // Método para consola (original)
     public void registrarCliente() {
         try {
             System.out.println("\n=== REGISTRAR CLIENTE ===");
@@ -55,7 +56,37 @@ public class ClienteController {
             System.out.println("Error al registrar cliente: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - registra cliente con parámetros
+    public Cliente registrarCliente(String nombre, String documento, String email, String telefono) {
+        try {
+            if (nombre == null || nombre.trim().isEmpty()) {
+                throw new IllegalArgumentException("El nombre es obligatorio.");
+            }
+            
+            if (!validarDocumento(documento)) {
+                throw new IllegalArgumentException("El documento debe ser un DNI de 8 dígitos.");
+            }
+            
+            if (email != null && !email.trim().isEmpty() && !validarEmail(email)) {
+                throw new IllegalArgumentException("Formato de email inválido.");
+            }
+            
+            Cliente cliente = new Cliente(
+                nombre.trim(), 
+                documento.trim(),
+                (email != null && !email.trim().isEmpty()) ? email.trim() : null,
+                (telefono != null && !telefono.trim().isEmpty()) ? telefono.trim() : null
+            );
+            
+            return clienteRepository.registrar(cliente);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al registrar cliente: " + e.getMessage());
+        }
+    }
 
+    // Método para consola (original)
     public void actualizarCliente() {
         try {
             System.out.println("\n=== ACTUALIZAR CLIENTE ===");
@@ -111,6 +142,24 @@ public class ClienteController {
             System.out.println("Error: ID inválido.");
         } catch (Exception e) {
             System.out.println("Error al actualizar cliente: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - actualiza cliente con objeto
+    public void actualizarCliente(Cliente cliente) {
+        try {
+            if (cliente == null) {
+                throw new IllegalArgumentException("El cliente no puede ser nulo.");
+            }
+            
+            if (cliente.getIdCliente() <= 0) {
+                throw new IllegalArgumentException("ID de cliente inválido.");
+            }
+            
+            clienteRepository.actualizar(cliente);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar cliente: " + e.getMessage());
         }
     }
 
@@ -243,6 +292,45 @@ public class ClienteController {
         } catch (Exception e) {
             System.out.println("Error al obtener cliente por documento: " + e.getMessage());
             return null;
+        }
+    }
+    
+    // ========== MÉTODOS PARA JAVAFX ==========
+    
+    // Método para JavaFX - elimina cliente por ID
+    public void eliminarCliente(int idCliente) {
+        try {
+            if (idCliente <= 0) {
+                throw new IllegalArgumentException("ID de cliente inválido.");
+            }
+            
+            clienteRepository.eliminar(idCliente);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar cliente: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - retorna lista de clientes
+    public List<Cliente> obtenerListaClientes() {
+        try {
+            return clienteRepository.listar();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar clientes: " + e.getMessage());
+        }
+    }
+    
+    // Método para JavaFX - busca cliente por criterio
+    public Cliente buscarCliente(String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                throw new IllegalArgumentException("Debe ingresar un criterio de búsqueda.");
+            }
+            
+            return clienteRepository.buscar(criterio.trim());
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar cliente: " + e.getMessage());
         }
     }
 }

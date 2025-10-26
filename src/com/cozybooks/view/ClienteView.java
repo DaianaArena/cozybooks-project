@@ -13,6 +13,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -224,14 +225,9 @@ public class ClienteView {
     
     private void loadClientes() {
         try {
-            // Simular la carga de datos desde el controlador
             clienteData.clear();
-            
-            // Aquí deberías llamar al método del controlador
-            // List<Cliente> clientes = clienteController.listarClientes();
-            // clienteData.addAll(clientes);
-            
-            showAlert("Información", "Datos cargados correctamente", Alert.AlertType.INFORMATION);
+            List<Cliente> clientes = clienteController.obtenerListaClientes();
+            clienteData.addAll(clientes);
         } catch (Exception e) {
             showAlert("Error", "Error al cargar clientes: " + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -264,22 +260,19 @@ public class ClienteView {
                 clienteEditando.setTelefono(telefonoField.getText().trim().isEmpty() ? null : telefonoField.getText().trim());
                 
                 // Llamar al controlador para actualizar
-                // clienteController.actualizarCliente(clienteEditando);
+                clienteController.actualizarCliente(clienteEditando);
                 
                 showAlert("Éxito", "Cliente actualizado correctamente", Alert.AlertType.INFORMATION);
             } else {
-                // Crear nuevo cliente
-                Cliente nuevoCliente = new Cliente(
+                // Crear nuevo cliente usando el método con parámetros
+                Cliente nuevoCliente = clienteController.registrarCliente(
                     nombreField.getText().trim(),
                     documentoField.getText().trim(),
                     emailField.getText().trim().isEmpty() ? null : emailField.getText().trim(),
                     telefonoField.getText().trim().isEmpty() ? null : telefonoField.getText().trim()
                 );
                 
-                // Llamar al controlador para registrar
-                // clienteController.registrarCliente(nuevoCliente);
-                
-                showAlert("Éxito", "Cliente registrado correctamente", Alert.AlertType.INFORMATION);
+                showAlert("Éxito", "Cliente registrado correctamente con ID: " + nuevoCliente.getIdCliente(), Alert.AlertType.INFORMATION);
             }
             
             clearForm();
@@ -312,7 +305,7 @@ public class ClienteView {
             if (response == ButtonType.OK) {
                 try {
                     // Llamar al controlador para eliminar
-                    // clienteController.eliminarCliente(cliente.getIdCliente());
+                    clienteController.eliminarCliente(cliente.getIdCliente());
                     
                     showAlert("Éxito", "Cliente eliminado correctamente", Alert.AlertType.INFORMATION);
                     loadClientes();
@@ -344,9 +337,19 @@ public class ClienteView {
         dialog.showAndWait().ifPresent(criterio -> {
             try {
                 // Llamar al controlador para buscar
-                // Cliente cliente = clienteController.buscarCliente(criterio);
+                Cliente cliente = clienteController.buscarCliente(criterio);
                 
-                showAlert("Información", "Búsqueda completada", Alert.AlertType.INFORMATION);
+                if (cliente != null) {
+                    showAlert("Cliente Encontrado", 
+                        "ID: " + cliente.getIdCliente() + "\n" +
+                        "Nombre: " + cliente.getNombre() + "\n" +
+                        "Documento: " + cliente.getDocumento() + "\n" +
+                        "Email: " + (cliente.getEmail() != null ? cliente.getEmail() : "No especificado") + "\n" +
+                        "Teléfono: " + (cliente.getTelefono() != null ? cliente.getTelefono() : "No especificado"),
+                        Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("Información", "No se encontró ningún cliente con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+                }
             } catch (Exception e) {
                 showAlert("Error", "Error al buscar cliente: " + e.getMessage(), Alert.AlertType.ERROR);
             }

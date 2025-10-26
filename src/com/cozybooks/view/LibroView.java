@@ -14,6 +14,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Vista para la gestión de Libros
@@ -350,14 +351,9 @@ public class LibroView {
     
     private void loadLibros() {
         try {
-            // Simular la carga de datos desde el controlador
             libroData.clear();
-            
-            // Aquí deberías llamar al método del controlador
-            // List<Libro> libros = libroController.listarLibros();
-            // libroData.addAll(libros);
-            
-            showAlert("Información", "Datos cargados correctamente", Alert.AlertType.INFORMATION);
+            List<Libro> libros = libroController.obtenerListaLibros();
+            libroData.addAll(libros);
         } catch (Exception e) {
             showAlert("Error", "Error al cargar libros: " + e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -472,7 +468,7 @@ public class LibroView {
                 }
                 
                 // Llamar al controlador para actualizar
-                // libroController.actualizarLibro(libroEditando);
+                libroController.actualizarLibro(libroEditando);
                 
                 showAlert("Éxito", "Libro actualizado correctamente", Alert.AlertType.INFORMATION);
             } else {
@@ -504,9 +500,9 @@ public class LibroView {
                 }
                 
                 // Llamar al controlador para registrar
-                // libroController.registrarLibro(nuevoLibro);
+                Libro libroRegistrado = libroController.registrarLibro(nuevoLibro);
                 
-                showAlert("Éxito", "Libro registrado correctamente", Alert.AlertType.INFORMATION);
+                showAlert("Éxito", "Libro registrado correctamente con ID: " + libroRegistrado.getIdLibro(), Alert.AlertType.INFORMATION);
             }
             
             clearForm();
@@ -558,7 +554,7 @@ public class LibroView {
             if (response == ButtonType.OK) {
                 try {
                     // Llamar al controlador para eliminar
-                    // libroController.eliminarLibro(libro.getIdLibro());
+                    libroController.eliminarLibro(libro.getIdLibro());
                     
                     showAlert("Éxito", "Libro eliminado correctamente", Alert.AlertType.INFORMATION);
                     loadLibros();
@@ -605,9 +601,13 @@ public class LibroView {
         dialog.showAndWait().ifPresent(criterio -> {
             try {
                 // Llamar al controlador para buscar
-                // List<Libro> libros = libroController.buscarLibro(criterio);
+                List<Libro> libros = libroController.buscarLibros(criterio);
                 
-                showAlert("Información", "Búsqueda completada", Alert.AlertType.INFORMATION);
+                if (libros.isEmpty()) {
+                    showAlert("Información", "No se encontraron libros con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("Libros Encontrados", "Se encontraron " + libros.size() + " libro(s) con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+                }
             } catch (Exception e) {
                 showAlert("Error", "Error al buscar libros: " + e.getMessage(), Alert.AlertType.ERROR);
             }
