@@ -4,6 +4,8 @@ import com.cozybooks.controller.AutorController;
 import com.cozybooks.controller.ClienteController;
 import com.cozybooks.controller.LibroController;
 import com.cozybooks.controller.VentaController;
+import com.cozybooks.model.Autor;
+import com.cozybooks.model.Libro;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -370,19 +372,57 @@ public class CozyBooksMainView extends Application {
         
         titleRow.getChildren().addAll(title, spacer, seeAll);
         
-        // Lista de libros
+        // Lista de libros (obtenidos de la base de datos)
         VBox booksList = new VBox(10);
         
-        // Libro 1
-        HBox book1 = createBookItem("El Principito", "Antoine de Saint-Exupéry", "Físico", "Disponible");
-        
-        // Libro 2
-        HBox book2 = createBookItem("Cien Años de Soledad", "Gabriel García Márquez", "Digital", "Disponible");
-        
-        // Libro 3
-        HBox book3 = createBookItem("1984", "George Orwell", "Audiolibro", "Agotado");
-        
-        booksList.getChildren().addAll(book1, book2, book3);
+        try {
+            // Obtener los últimos 3 libros de la base de datos
+            List<Libro> ultimosLibros = libroController.obtenerUltimosLibros(3);
+            
+            if (ultimosLibros.isEmpty()) {
+                // Si no hay libros, mostrar mensaje
+                Text noBooksText = new Text("No hay libros registrados");
+                noBooksText.setFont(Font.font("Arial", 14));
+                noBooksText.setStyle("-fx-fill: #9f84bd;");
+                booksList.getChildren().add(noBooksText);
+            } else {
+                // Mostrar los libros obtenidos
+                for (Libro libro : ultimosLibros) {
+                    // Obtener información del autor
+                    String nombreAutor = "Autor desconocido";
+                    try {
+                        Autor autor = autorController.obtenerAutor(libro.getIdAutor());
+                        if (autor != null) {
+                            nombreAutor = autor.getNombre();
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error al obtener autor: " + e.getMessage());
+                    }
+                    
+                    // Determinar el tipo de libro
+                    String tipoLibro = libro.getTipoLibro().toString();
+                    if (tipoLibro.equals("FISICO")) tipoLibro = "Físico";
+                    else if (tipoLibro.equals("DIGITAL")) tipoLibro = "Digital";
+                    else if (tipoLibro.equals("AUDIOLIBRO")) tipoLibro = "Audiolibro";
+                    
+                    // Determinar el estado de disponibilidad
+                    String estado = "Disponible";
+                    if (libro.getTipoLibro() == Libro.TipoLibro.FISICO && libro.getStock() <= 0) {
+                        estado = "Agotado";
+                    }
+                    
+                    HBox bookItem = createBookItem(libro.getTitulo(), nombreAutor, tipoLibro, estado);
+                    booksList.getChildren().add(bookItem);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error al obtener libros recientes: " + e.getMessage());
+            // Mostrar mensaje de error
+            Text errorText = new Text("Error al cargar libros");
+            errorText.setFont(Font.font("Arial", 14));
+            errorText.setStyle("-fx-fill: #e74c3c;");
+            booksList.getChildren().add(errorText);
+        }
         
         section.getChildren().addAll(titleRow, booksList);
         return section;

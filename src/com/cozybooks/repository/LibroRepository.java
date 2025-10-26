@@ -261,6 +261,25 @@ public class LibroRepository {
         
         return 0;
     }
+    
+    public List<Libro> obtenerUltimosLibros(int cantidad) throws SQLException {
+        String sql = "SELECT * FROM LIBRO ORDER BY fecha_registro DESC LIMIT ?";
+        List<Libro> libros = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, cantidad);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    libros.add(mapearResultSetALibro(rs));
+                }
+            }
+        }
+        
+        return libros;
+    }
 
     private boolean existeIsbn(String isbn) throws SQLException {
         String sql = "SELECT COUNT(*) FROM LIBRO WHERE isbn = ?";

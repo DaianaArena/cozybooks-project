@@ -436,4 +436,13 @@ public class LibroController {
             throw new RuntimeException("Error al obtener total de libros: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - obtiene los últimos libros agregados
+    public List<Libro> obtenerUltimosLibros(int cantidad) {
+        try {
+            return libroRepository.obtenerUltimosLibros(cantidad);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener últimos libros: " + e.getMessage());
+        }
+    }
 }
