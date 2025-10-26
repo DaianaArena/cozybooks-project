@@ -287,7 +287,7 @@ public class CozyBooksMainView extends Application {
     
     private HBox createSummaryCards() {
         HBox cardsContainer = new HBox(20);
-        cardsContainer.setPadding(new Insets(20, 0, 0, 0));
+        cardsContainer.setPadding(new Insets(20, 0, 40, 0)); // Aumentado margen inferior de 0 a 40
         
         // Tarjeta 1: Total de Libros
         VBox card1 = createSummaryCard("📚", "2,847", "Total de Libros");
@@ -301,6 +301,12 @@ public class CozyBooksMainView extends Application {
         // Tarjeta 4: Ventas del Mes
         VBox card4 = createSummaryCard("🛒", "$12,450", "Ventas del Mes");
         
+        // Hacer que las tarjetas ocupen todo el ancho disponible
+        HBox.setHgrow(card1, Priority.ALWAYS);
+        HBox.setHgrow(card2, Priority.ALWAYS);
+        HBox.setHgrow(card3, Priority.ALWAYS);
+        HBox.setHgrow(card4, Priority.ALWAYS);
+        
         cardsContainer.getChildren().addAll(card1, card2, card3, card4);
         return cardsContainer;
     }
@@ -309,7 +315,6 @@ public class CozyBooksMainView extends Application {
         VBox card = new VBox(10);
         card.setStyle("-fx-background-color: #f3f6f4; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
         card.setAlignment(Pos.CENTER);
-        card.setPrefWidth(200);
         
         Text iconText = new Text(icon);
         iconText.setFont(Font.font("Arial", 32));
@@ -321,7 +326,7 @@ public class CozyBooksMainView extends Application {
         
         Text labelText = new Text(label);
         labelText.setFont(Font.font("Arial", 12));
-        labelText.setStyle("-fx-fill: #ebc3db;");
+        labelText.setStyle("-fx-fill: #9f84bd;");
         labelText.setTextAlignment(TextAlignment.CENTER);
         
         card.getChildren().addAll(iconText, numberText, labelText);
