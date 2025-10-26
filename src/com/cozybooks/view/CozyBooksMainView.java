@@ -18,6 +18,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import java.util.List;
 
 /**
  * Vista principal de la aplicación Cozy Books con interfaz JavaFX moderna
@@ -150,7 +151,7 @@ public class CozyBooksMainView extends Application {
     
     private VBox createSidebar() {
         VBox sidebar = new VBox();
-        sidebar.setStyle("-fx-background-color: #f3f6f4; -fx-padding: 20;");
+        sidebar.setStyle("-fx-background-color: #ede3e9; -fx-padding: 20;");
         sidebar.setSpacing(10);
         sidebar.setPrefWidth(250);
         
@@ -162,13 +163,34 @@ public class CozyBooksMainView extends Application {
         Button ventasBtn = createMenuButton("🛒 Gestión de Ventas", false);
         Button reportesBtn = createMenuButton("📈 Reportes", false);
         
+        // Lista de botones para manejar la selección
+        List<Button> menuButtons = List.of(dashboardBtn, librosBtn, autoresBtn, clientesBtn, ventasBtn, reportesBtn);
+        
         // Eventos de los botones
-        dashboardBtn.setOnAction(e -> showDashboard());
-        librosBtn.setOnAction(e -> showLibros());
-        autoresBtn.setOnAction(e -> showAutores());
-        clientesBtn.setOnAction(e -> showClientes());
-        ventasBtn.setOnAction(e -> showVentas());
-        reportesBtn.setOnAction(e -> showReportes());
+        dashboardBtn.setOnAction(e -> {
+            setActiveButton(menuButtons, dashboardBtn);
+            showDashboard();
+        });
+        librosBtn.setOnAction(e -> {
+            setActiveButton(menuButtons, librosBtn);
+            showLibros();
+        });
+        autoresBtn.setOnAction(e -> {
+            setActiveButton(menuButtons, autoresBtn);
+            showAutores();
+        });
+        clientesBtn.setOnAction(e -> {
+            setActiveButton(menuButtons, clientesBtn);
+            showClientes();
+        });
+        ventasBtn.setOnAction(e -> {
+            setActiveButton(menuButtons, ventasBtn);
+            showVentas();
+        });
+        reportesBtn.setOnAction(e -> {
+            setActiveButton(menuButtons, reportesBtn);
+            showReportes();
+        });
         
         sidebar.getChildren().addAll(dashboardBtn, librosBtn, autoresBtn, clientesBtn, ventasBtn, reportesBtn);
         
@@ -183,14 +205,14 @@ public class CozyBooksMainView extends Application {
         button.setAlignment(Pos.CENTER_LEFT);
         
         if (isActive) {
-            button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
+            button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #fafafa; -fx-background-radius: 10; -fx-border-radius: 10;");
         } else {
             button.setStyle("-fx-background-color: transparent; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
         }
         
         button.setOnMouseEntered(e -> {
             if (!isActive) {
-                button.setStyle("-fx-background-color: #ebdccb; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
+                button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #fafafa; -fx-background-radius: 10; -fx-border-radius: 10;");
             }
         });
         
@@ -201,6 +223,18 @@ public class CozyBooksMainView extends Application {
         });
         
         return button;
+    }
+    
+    private void setActiveButton(List<Button> menuButtons, Button activeButton) {
+        for (Button button : menuButtons) {
+            if (button == activeButton) {
+                // Botón activo
+                button.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: #fafafa; -fx-background-radius: 10; -fx-border-radius: 10;");
+            } else {
+                // Botones inactivos
+                button.setStyle("-fx-background-color: transparent; -fx-text-fill: #181818; -fx-background-radius: 10; -fx-border-radius: 10;");
+            }
+        }
     }
     
     private Button createIconButton(String icon, String color) {
