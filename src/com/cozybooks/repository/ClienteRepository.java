@@ -225,6 +225,34 @@ public class ClienteRepository {
         
         return 0;
     }
+    
+    public List<Cliente> buscarClientes(String criterio) throws SQLException {
+        String sql = "SELECT * FROM CLIENTE WHERE nombre LIKE ? OR documento LIKE ? OR email LIKE ?";
+        List<Cliente> clientes = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + criterio + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Cliente cliente = new Cliente();
+                    cliente.setIdCliente(rs.getInt("id_cliente"));
+                    cliente.setNombre(rs.getString("nombre"));
+                    cliente.setDocumento(rs.getString("documento"));
+                    cliente.setEmail(rs.getString("email"));
+                    cliente.setTelefono(rs.getString("telefono"));
+                    clientes.add(cliente);
+                }
+            }
+        }
+        
+        return clientes;
+    }
 
     private Cliente mapearResultSetACliente(ResultSet rs) throws SQLException {
         Cliente cliente = new Cliente();
