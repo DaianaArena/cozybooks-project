@@ -26,9 +26,10 @@ public class ArchivoService {
      * @param cliente el cliente de la venta
      * @param detalles los detalles de la venta
      * @param libros los libros vendidos
+     * @return la ruta absoluta del archivo generado
      * @throws IOException si hay error al escribir el archivo
      */
-    public static void generarTicket(Venta venta, Cliente cliente, List<DetalleVenta> detalles, List<Libro> libros) throws IOException {
+    public static String generarTicket(Venta venta, Cliente cliente, List<DetalleVenta> detalles, List<Libro> libros) throws IOException {
         // Crear directorio si no existe
         Path ticketsPath = Paths.get(TICKETS_DIR);
         if (!Files.exists(ticketsPath)) {
@@ -82,6 +83,7 @@ public class ArchivoService {
         }
 
         System.out.println("Ticket generado exitosamente: " + filePath.toString());
+        return filePath.toAbsolutePath().toString();
     }
 
     /**

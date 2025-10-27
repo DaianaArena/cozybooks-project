@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Vista para la gestión de Ventas
@@ -834,12 +836,55 @@ public class VentaView {
     
     private void generarTicket(int idVenta) {
         try {
-            // Llamar al controlador para generar ticket
-            ventaController.generarTicket(idVenta);
+            // Llamar al controlador para generar ticket y obtener la ruta
+            String rutaTicket = ventaController.generarTicket(idVenta);
             
-            showAlert("Éxito", "Ticket generado correctamente", Alert.AlertType.INFORMATION);
+            if (rutaTicket != null) {
+                // Abrir el archivo específico en el explorador de archivos
+                abrirArchivoTicket(rutaTicket);
+                showAlert("Éxito", "Ticket generado correctamente y archivo abierto", Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("Error", "No se pudo generar el ticket", Alert.AlertType.ERROR);
+            }
         } catch (Exception e) {
             showAlert("Error", "Error al generar ticket: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+    
+    private void abrirArchivoTicket(String rutaTicket) {
+        try {
+            File archivoTicket = new File(rutaTicket);
+            
+            // Verificar que el archivo existe
+            if (!archivoTicket.exists()) {
+                showAlert("Error", "El archivo de ticket no se encontró: " + rutaTicket, Alert.AlertType.ERROR);
+                return;
+            }
+            
+            // Detectar el sistema operativo y abrir el archivo específico
+            String os = System.getProperty("os.name").toLowerCase();
+            
+            if (os.contains("win")) {
+                // Windows - abrir carpeta y seleccionar archivo
+                Runtime.getRuntime().exec("explorer.exe /select,\"" + rutaTicket + "\"");
+            } else if (os.contains("mac")) {
+                // macOS - abrir carpeta y seleccionar archivo
+                Runtime.getRuntime().exec("open -R \"" + rutaTicket + "\"");
+            } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+                // Linux/Unix - abrir carpeta contenedora
+                String carpetaPadre = archivoTicket.getParent();
+                Runtime.getRuntime().exec("xdg-open \"" + carpetaPadre + "\"");
+            } else {
+                // Sistema operativo no reconocido, intentar con el comando genérico
+                String carpetaPadre = archivoTicket.getParent();
+                Runtime.getRuntime().exec("xdg-open \"" + carpetaPadre + "\"");
+            }
+        } catch (IOException e) {
+            // Si no se puede abrir el explorador, mostrar la ruta en un mensaje
+            showAlert("Información", 
+                "Ticket generado en: " + rutaTicket + 
+                "\nNo se pudo abrir automáticamente el explorador de archivos.", 
+                Alert.AlertType.INFORMATION);
         }
     }
     

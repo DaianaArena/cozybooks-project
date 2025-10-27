@@ -396,18 +396,18 @@ public class VentaController {
         }
     }
 
-    public void generarTicket(int idVenta) {
+    public String generarTicket(int idVenta) {
         try {
             Venta venta = ventaRepository.obtenerPorId(idVenta);
             if (venta == null) {
                 System.out.println("Error: No se encontró la venta con ID: " + idVenta);
-                return;
+                return null;
             }
             
             Cliente cliente = clienteRepository.obtenerPorId(venta.getIdCliente());
             if (cliente == null) {
                 System.out.println("Error: No se encontró el cliente de la venta.");
-                return;
+                return null;
             }
             
             List<DetalleVenta> detalles = detalleVentaRepository.buscarPorVenta(idVenta);
@@ -420,10 +420,11 @@ public class VentaController {
                 }
             }
             
-            ArchivoService.generarTicket(venta, cliente, detalles, libros);
+            return ArchivoService.generarTicket(venta, cliente, detalles, libros);
             
         } catch (Exception e) {
             System.out.println("Error al generar ticket: " + e.getMessage());
+            return null;
         }
     }
 
