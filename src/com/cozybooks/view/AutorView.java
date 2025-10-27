@@ -89,8 +89,8 @@ public class AutorView {
         searchButton.setOnAction(e -> searchAutores(searchField.getText()));
         
         // Botón reporte
-        Button reportButton = new Button("📊 REPORTE");
-        reportButton.setStyle("-fx-background-color: #ebdccb; -fx-text-fill: #181818; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-size: 14;");
+        Button reportButton = new Button("📊");
+        reportButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 12;");
         reportButton.setOnAction(e -> showReporteDialog());
         
         // Botón crear autor
@@ -283,37 +283,52 @@ public class AutorView {
     }
     
     private VBox createFormPanel() {
-        VBox panel = new VBox(15);
-        panel.setPadding(new Insets(20));
-        panel.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        VBox panel = new VBox(20);
+        panel.setPadding(new Insets(30));
+        panel.setStyle("-fx-background-color: #faf8d4; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 3);");
+        
+        // Header del formulario
+        HBox headerContainer = new HBox();
+        headerContainer.setAlignment(Pos.CENTER_LEFT);
         
         Text formTitle = new Text("Registrar/Editar Autor");
-        formTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        formTitle.setStyle("-fx-fill: #2c3e50;");
+        formTitle.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        formTitle.setStyle("-fx-fill: #181818;");
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        // Botón cerrar
+        Button closeButton = new Button("✕");
+        closeButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 12; -fx-font-size: 14; -fx-font-weight: bold;");
+        closeButton.setOnAction(e -> {
+            // Cerrar el formulario
+            Stage stage = (Stage) closeButton.getScene().getWindow();
+            stage.close();
+        });
+        
+        headerContainer.getChildren().addAll(formTitle, spacer, closeButton);
         
         // Campos del formulario
-        VBox formContainer = new VBox(10);
+        VBox formContainer = new VBox(15);
+        formContainer.setPadding(new Insets(20));
+        formContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 3, 0, 0, 1);");
         
         // Nombre
-        Label nombreLabel = new Label("Nombre *");
-        nombreField = new TextField();
-        nombreField.setPromptText("Ingrese el nombre del autor");
+        Label nombreLabel = createFormLabel("Nombre *");
+        nombreField = createFormTextField("Ingrese el nombre del autor");
         
         // Fecha de nacimiento
-        Label fechaLabel = new Label("Fecha de Nacimiento *");
-        fechaNacimientoPicker = new DatePicker();
-        fechaNacimientoPicker.setPromptText("Seleccione la fecha");
+        Label fechaLabel = createFormLabel("Fecha de Nacimiento *");
+        fechaNacimientoPicker = createFormDatePicker();
         
         // Nacionalidad
-        Label nacionalidadLabel = new Label("Nacionalidad");
-        nacionalidadField = new TextField();
-        nacionalidadField.setPromptText("Ingrese la nacionalidad (opcional)");
+        Label nacionalidadLabel = createFormLabel("Nacionalidad");
+        nacionalidadField = createFormTextField("Ingrese la nacionalidad (opcional)");
         
         // Biografía
-        Label biografiaLabel = new Label("Biografía");
-        biografiaArea = new TextArea();
-        biografiaArea.setPromptText("Ingrese la biografía del autor (opcional)");
-        biografiaArea.setPrefRowCount(4);
+        Label biografiaLabel = createFormLabel("Biografía");
+        biografiaArea = createFormTextArea("Ingrese la biografía del autor (opcional)");
         
         formContainer.getChildren().addAll(
             nombreLabel, nombreField,
@@ -323,20 +338,21 @@ public class AutorView {
         );
         
         // Botones
-        HBox buttonContainer = new HBox(10);
+        HBox buttonContainer = new HBox(15);
         buttonContainer.setAlignment(Pos.CENTER);
+        buttonContainer.setPadding(new Insets(20, 0, 0, 0));
         
-        saveButton = new Button("💾 Guardar");
-        saveButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        saveButton = new Button("💾 GUARDAR");
+        saveButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 14;");
         saveButton.setOnAction(e -> saveAutor());
         
-        cancelButton = new Button("❌ Cancelar");
-        cancelButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        cancelButton = new Button("❌ CANCELAR");
+        cancelButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 14;");
         cancelButton.setOnAction(e -> clearForm());
         
         buttonContainer.getChildren().addAll(saveButton, cancelButton);
         
-        panel.getChildren().addAll(formTitle, formContainer, buttonContainer);
+        panel.getChildren().addAll(headerContainer, formContainer, buttonContainer);
         
         return panel;
     }
@@ -619,6 +635,38 @@ public class AutorView {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    // Métodos helper para crear elementos del formulario con estilo del dashboard
+    private Label createFormLabel(String text) {
+        Label label = new Label(text);
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        label.setStyle("-fx-text-fill: #181818; -fx-padding: 0 0 5 0;");
+        return label;
+    }
+    
+    private TextField createFormTextField(String promptText) {
+        TextField field = new TextField();
+        field.setPromptText(promptText);
+        field.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12; -fx-font-size: 14;");
+        field.setPrefHeight(40);
+        return field;
+    }
+    
+    private DatePicker createFormDatePicker() {
+        DatePicker picker = new DatePicker();
+        picker.setPromptText("Seleccione la fecha");
+        picker.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12; -fx-font-size: 14;");
+        picker.setPrefHeight(40);
+        return picker;
+    }
+    
+    private TextArea createFormTextArea(String promptText) {
+        TextArea area = new TextArea();
+        area.setPromptText(promptText);
+        area.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12; -fx-font-size: 14;");
+        area.setPrefRowCount(4);
+        return area;
     }
     
     public VBox getView() {
