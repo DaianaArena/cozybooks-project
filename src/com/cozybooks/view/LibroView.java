@@ -386,97 +386,105 @@ public class LibroView {
     }
     
     private VBox createFormPanel() {
-        VBox panel = new VBox(15);
-        panel.setPadding(new Insets(20));
-        panel.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        VBox panel = new VBox(20);
+        panel.setPadding(new Insets(30));
+        panel.setStyle("-fx-background-color: #faf8d4; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 3);");
+        
+        // Header del formulario
+        HBox headerContainer = new HBox();
+        headerContainer.setAlignment(Pos.CENTER_LEFT);
         
         Text formTitle = new Text("Registrar/Editar Libro");
-        formTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        formTitle.setStyle("-fx-fill: #2c3e50;");
+        formTitle.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        formTitle.setStyle("-fx-fill: #181818;");
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        // Botón cerrar
+        Button closeButton = new Button("✕");
+        closeButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 12; -fx-font-size: 14; -fx-font-weight: bold;");
+        closeButton.setOnAction(e -> {
+            // Cerrar el formulario
+            Stage stage = (Stage) closeButton.getScene().getWindow();
+            stage.close();
+        });
+        
+        headerContainer.getChildren().addAll(formTitle, spacer, closeButton);
         
         // Scroll pane para el formulario
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-background-radius: 10;");
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         
         // Campos del formulario
-        VBox formContainer = new VBox(10);
+        VBox formContainer = new VBox(15);
+        formContainer.setPadding(new Insets(20));
+        formContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 3, 0, 0, 1);");
         
         // Título
-        Label tituloLabel = new Label("Título *");
-        tituloField = new TextField();
-        tituloField.setPromptText("Ingrese el título del libro");
+        Label tituloLabel = createFormLabel("Título *");
+        tituloField = createFormTextField("Ingrese el título del libro");
         
         // ISBN
-        Label isbnLabel = new Label("ISBN");
-        isbnField = new TextField();
-        isbnField.setPromptText("Ingrese ISBN (opcional)");
+        Label isbnLabel = createFormLabel("ISBN");
+        isbnField = createFormTextField("Ingrese ISBN (opcional)");
         
         // Editorial
-        Label editorialLabel = new Label("Editorial *");
-        editorialField = new TextField();
-        editorialField.setPromptText("Ingrese la editorial");
+        Label editorialLabel = createFormLabel("Editorial *");
+        editorialField = createFormTextField("Ingrese la editorial");
         
         // Año
-        Label añoLabel = new Label("Año de Publicación *");
-        añoField = new TextField();
-        añoField.setPromptText("Ingrese el año");
+        Label añoLabel = createFormLabel("Año de Publicación *");
+        añoField = createFormTextField("Ingrese el año");
         
         // Precio
-        Label precioLabel = new Label("Precio *");
-        precioField = new TextField();
-        precioField.setPromptText("Ingrese el precio");
+        Label precioLabel = createFormLabel("Precio *");
+        precioField = createFormTextField("Ingrese el precio");
         
         // Género
-        Label generoLabel = new Label("Género");
-        generoField = new TextField();
-        generoField.setPromptText("Ingrese el género (opcional)");
+        Label generoLabel = createFormLabel("Género");
+        generoField = createFormTextField("Ingrese el género (opcional)");
         
         // Tipo de libro
-        Label tipoLabel = new Label("Tipo de Libro *");
-        tipoCombo = new ComboBox<>();
+        Label tipoLabel = createFormLabel("Tipo de Libro *");
+        tipoCombo = createFormComboBox();
         tipoCombo.getItems().addAll(Libro.TipoLibro.values());
         tipoCombo.setPromptText("Seleccione el tipo");
         tipoCombo.setOnAction(e -> toggleSpecificFields());
         
         // Stock (solo para libros físicos)
-        Label stockLabel = new Label("Stock");
-        stockField = new TextField();
-        stockField.setPromptText("Ingrese stock inicial");
+        Label stockLabel = createFormLabel("Stock");
+        stockField = createFormTextField("Ingrese stock inicial");
         
         // ID Autor
-        Label idAutorLabel = new Label("ID del Autor *");
-        idAutorField = new TextField();
-        idAutorField.setPromptText("Ingrese el ID del autor");
+        Label idAutorLabel = createFormLabel("ID del Autor *");
+        idAutorField = createFormTextField("Ingrese el ID del autor");
         
         // Campos específicos para libros físicos
-        Label encuadernadoLabel = new Label("Tipo de Encuadernado");
-        encuadernadoField = new TextField();
-        encuadernadoField.setPromptText("Tapa dura, tapa blanda, etc.");
+        Label encuadernadoLabel = createFormLabel("Tipo de Encuadernado");
+        encuadernadoField = createFormTextField("Tapa dura, tapa blanda, etc.");
         
-        Label numEdicionLabel = new Label("Número de Edición");
-        numEdicionField = new TextField();
-        numEdicionField.setPromptText("Ingrese número de edición");
+        Label numEdicionLabel = createFormLabel("Número de Edición");
+        numEdicionField = createFormTextField("Ingrese número de edición");
         
         // Campos específicos para libros digitales
-        Label extensionLabel = new Label("Extensión del Archivo");
-        extensionField = new TextField();
-        extensionField.setPromptText("PDF, EPUB, etc.");
+        Label extensionLabel = createFormLabel("Extensión del Archivo");
+        extensionField = createFormTextField("PDF, EPUB, etc.");
         
-        permiteImpresionCheck = new CheckBox("Permite Impresión");
+        permiteImpresionCheck = createFormCheckBox("Permite Impresión");
         
         // Campos específicos para audiolibros
-        Label duracionLabel = new Label("Duración (minutos)");
-        duracionField = new TextField();
-        duracionField.setPromptText("Ingrese duración en minutos");
+        Label duracionLabel = createFormLabel("Duración (minutos)");
+        duracionField = createFormTextField("Ingrese duración en minutos");
         
-        Label plataformaLabel = new Label("Plataforma");
-        plataformaField = new TextField();
-        plataformaField.setPromptText("Audible, Spotify, etc.");
+        Label plataformaLabel = createFormLabel("Plataforma");
+        plataformaField = createFormTextField("Audible, Spotify, etc.");
         
-        Label narradorLabel = new Label("Narrador");
-        narradorField = new TextField();
-        narradorField.setPromptText("Ingrese nombre del narrador");
+        Label narradorLabel = createFormLabel("Narrador");
+        narradorField = createFormTextField("Ingrese nombre del narrador");
         
         formContainer.getChildren().addAll(
             tituloLabel, tituloField,
@@ -500,20 +508,21 @@ public class LibroView {
         scrollPane.setContent(formContainer);
         
         // Botones
-        HBox buttonContainer = new HBox(10);
+        HBox buttonContainer = new HBox(15);
         buttonContainer.setAlignment(Pos.CENTER);
+        buttonContainer.setPadding(new Insets(20, 0, 0, 0));
         
-        saveButton = new Button("💾 Guardar");
-        saveButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        saveButton = new Button("💾 GUARDAR");
+        saveButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 14;");
         saveButton.setOnAction(e -> saveLibro());
         
-        cancelButton = new Button("❌ Cancelar");
-        cancelButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;");
+        cancelButton = new Button("❌ CANCELAR");
+        cancelButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 14;");
         cancelButton.setOnAction(e -> clearForm());
         
         buttonContainer.getChildren().addAll(saveButton, cancelButton);
         
-        panel.getChildren().addAll(formTitle, scrollPane, buttonContainer);
+        panel.getChildren().addAll(headerContainer, scrollPane, buttonContainer);
         
         return panel;
     }
@@ -951,23 +960,14 @@ public class LibroView {
         // Crear un diálogo modal para el formulario de creación
         Stage formStage = new Stage();
         formStage.setTitle("Nuevo Libro");
-        formStage.setResizable(false);
+        formStage.setResizable(true);
+        formStage.setMinWidth(600);
+        formStage.setMinHeight(700);
         
-        VBox formContainer = new VBox(20);
-        formContainer.setPadding(new Insets(30));
-        formContainer.setStyle("-fx-background-color: #faf8d4;");
-        
-        // Título
-        Text title = new Text("Crear Nuevo Libro");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        title.setStyle("-fx-fill: #181818;");
-        
-        // Formulario (reutilizar el panel de formulario existente)
+        // Formulario con el nuevo diseño
         VBox formPanel = createFormPanel();
         
-        formContainer.getChildren().addAll(title, formPanel);
-        
-        Scene scene = new Scene(formContainer, 500, 600);
+        Scene scene = new Scene(formPanel, 600, 700);
         formStage.setScene(scene);
         formStage.show();
     }
@@ -978,6 +978,36 @@ public class LibroView {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    // Métodos helper para crear elementos del formulario con estilo del dashboard
+    private Label createFormLabel(String text) {
+        Label label = new Label(text);
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        label.setStyle("-fx-text-fill: #181818; -fx-padding: 0 0 5 0;");
+        return label;
+    }
+    
+    private TextField createFormTextField(String promptText) {
+        TextField field = new TextField();
+        field.setPromptText(promptText);
+        field.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12; -fx-font-size: 14;");
+        field.setPrefHeight(40);
+        return field;
+    }
+    
+    private ComboBox<Libro.TipoLibro> createFormComboBox() {
+        ComboBox<Libro.TipoLibro> combo = new ComboBox<>();
+        combo.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12; -fx-font-size: 14;");
+        combo.setPrefHeight(40);
+        return combo;
+    }
+    
+    private CheckBox createFormCheckBox(String text) {
+        CheckBox checkBox = new CheckBox(text);
+        checkBox.setFont(Font.font("Arial", 14));
+        checkBox.setStyle("-fx-text-fill: #181818; -fx-padding: 5 0;");
+        return checkBox;
     }
     
     public VBox getView() {
