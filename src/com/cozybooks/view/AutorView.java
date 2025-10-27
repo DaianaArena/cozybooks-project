@@ -3,6 +3,7 @@ package com.cozybooks.view;
 import com.cozybooks.controller.AutorController;
 import com.cozybooks.model.Autor;
 import com.cozybooks.model.Libro;
+import com.cozybooks.util.SvgMapper;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -49,28 +50,159 @@ public class AutorView {
     }
     
     private void setupUI() {
-        mainContainer = new VBox(20);
-        mainContainer.setPadding(new Insets(20));
-        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        mainContainer = new VBox(0);
+        mainContainer.setStyle("-fx-background-color: #faf8d4;");
+        
+        // Header con título, buscador y botón crear
+        HBox header = createHeader();
+        
+        // Contenedor de la tabla
+        VBox tableContainer = createTableContainer();
+        
+        mainContainer.getChildren().addAll(header, tableContainer);
+    }
+    
+    private HBox createHeader() {
+        HBox header = new HBox(20);
+        header.setPadding(new Insets(20));
+        header.setStyle("-fx-background-color: #ede3e9; -fx-background-radius: 0 0 15 15;");
+        header.setAlignment(Pos.CENTER_LEFT);
         
         // Título
         Text title = new Text("Gestión de Autores");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 28));
-        title.setStyle("-fx-fill: #2c3e50;");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        title.setStyle("-fx-fill: #181818;");
         
-        // Crear el layout principal con split pane
-        SplitPane splitPane = new SplitPane();
-        splitPane.setDividerPositions(0.6);
+        // Espaciador
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        // Panel izquierdo - Tabla de autores
-        VBox leftPanel = createTablePanel();
+        // Buscador
+        TextField searchField = new TextField();
+        searchField.setPromptText("Buscar por nombre o nacionalidad...");
+        searchField.setPrefWidth(300);
+        searchField.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;");
         
-        // Panel derecho - Formulario
-        VBox rightPanel = createFormPanel();
+        // Botón de búsqueda
+        Button searchButton = new Button(SvgMapper.SEARCH_ICON);
+        searchButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 12;");
+        searchButton.setOnAction(e -> searchAutores(searchField.getText()));
         
-        splitPane.getItems().addAll(leftPanel, rightPanel);
+        // Botón reporte
+        Button reportButton = new Button("📊 REPORTE");
+        reportButton.setStyle("-fx-background-color: #ebdccb; -fx-text-fill: #181818; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-size: 14;");
+        reportButton.setOnAction(e -> showReporteDialog());
         
-        mainContainer.getChildren().addAll(title, splitPane);
+        // Botón crear autor
+        Button createButton = new Button("➕ NUEVO AUTOR");
+        createButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-size: 14;");
+        createButton.setOnAction(e -> showCreateForm());
+        
+        HBox searchContainer = new HBox(8);
+        searchContainer.getChildren().addAll(searchField, searchButton);
+        
+        header.getChildren().addAll(title, spacer, searchContainer, reportButton, createButton);
+        
+        return header;
+    }
+    
+    private VBox createTableContainer() {
+        VBox container = new VBox(0);
+        container.setPadding(new Insets(20));
+        
+        // Tabla de autores
+        autorTable = new TableView<>();
+        autorTable.setItems(autorData);
+        autorTable.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        autorTable.setRowFactory(tv -> {
+            TableRow<Autor> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    Autor autor = row.getItem();
+                    editAutor(autor);
+                }
+            });
+            return row;
+        });
+        
+        // Configurar columnas
+        setupTableColumns();
+        
+        // Hacer que la tabla ocupe todo el ancho disponible
+        VBox.setVgrow(autorTable, Priority.ALWAYS);
+        
+        container.getChildren().add(autorTable);
+        
+        return container;
+    }
+    
+    private void setupTableColumns() {
+        // Limpiar columnas existentes
+        autorTable.getColumns().clear();
+        
+        // ID
+        TableColumn<Autor, Integer> idColumn = new TableColumn<>("ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("idAutor"));
+        idColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Nombre
+        TableColumn<Autor, String> nombreColumn = new TableColumn<>("NOMBRE");
+        nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        
+        // Fecha de Nacimiento
+        TableColumn<Autor, LocalDate> fechaColumn = new TableColumn<>("FECHA NACIMIENTO");
+        fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaNacimiento"));
+        fechaColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Nacionalidad
+        TableColumn<Autor, String> nacionalidadColumn = new TableColumn<>("NACIONALIDAD");
+        nacionalidadColumn.setCellValueFactory(new PropertyValueFactory<>("nacionalidad"));
+        nacionalidadColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Acciones
+        TableColumn<Autor, Void> actionsColumn = new TableColumn<>("ACCIONES");
+        actionsColumn.setStyle("-fx-alignment: CENTER;");
+        actionsColumn.setCellFactory(param -> new TableCell<Autor, Void>() {
+            private final Button editButton = new Button(SvgMapper.EDIT_ICON);
+            private final Button deleteButton = new Button(SvgMapper.DELETE_ICON);
+            
+            {
+                editButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 6 12; -fx-font-size: 12;");
+                deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 6 12; -fx-font-size: 12;");
+                
+                editButton.setOnAction(e -> {
+                    Autor autor = getTableView().getItems().get(getIndex());
+                    editAutor(autor);
+                });
+                
+                deleteButton.setOnAction(e -> {
+                    Autor autor = getTableView().getItems().get(getIndex());
+                    deleteAutor(autor);
+                });
+            }
+            
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox buttons = new HBox(5);
+                    buttons.setAlignment(Pos.CENTER);
+                    buttons.getChildren().addAll(editButton, deleteButton);
+                    setGraphic(buttons);
+                }
+            }
+        });
+        
+        autorTable.getColumns().addAll(idColumn, nombreColumn, fechaColumn, nacionalidadColumn, actionsColumn);
+        
+        // Configurar ancho de columnas para que ocupen el 100%
+        idColumn.prefWidthProperty().bind(autorTable.widthProperty().multiply(0.10));
+        nombreColumn.prefWidthProperty().bind(autorTable.widthProperty().multiply(0.35));
+        fechaColumn.prefWidthProperty().bind(autorTable.widthProperty().multiply(0.25));
+        nacionalidadColumn.prefWidthProperty().bind(autorTable.widthProperty().multiply(0.20));
+        actionsColumn.prefWidthProperty().bind(autorTable.widthProperty().multiply(0.10));
     }
     
     private VBox createTablePanel() {
@@ -106,24 +238,8 @@ public class AutorView {
             return row;
         });
         
-        // Columnas de la tabla
-        TableColumn<Autor, Integer> idColumn = new TableColumn<>("ID");
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("idAutor"));
-        idColumn.setPrefWidth(60);
-        
-        TableColumn<Autor, String> nombreColumn = new TableColumn<>("Nombre");
-        nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        nombreColumn.setPrefWidth(200);
-        
-        TableColumn<Autor, LocalDate> fechaColumn = new TableColumn<>("Fecha Nacimiento");
-        fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaNacimiento"));
-        fechaColumn.setPrefWidth(120);
-        
-        TableColumn<Autor, String> nacionalidadColumn = new TableColumn<>("Nacionalidad");
-        nacionalidadColumn.setCellValueFactory(new PropertyValueFactory<>("nacionalidad"));
-        nacionalidadColumn.setPrefWidth(120);
-        
-        autorTable.getColumns().addAll(idColumn, nombreColumn, fechaColumn, nacionalidadColumn);
+        // Configurar columnas
+        setupTableColumns();
         
         // Botones de acción de fila
         TableColumn<Autor, Void> actionsColumn = new TableColumn<>("Acciones");
@@ -459,6 +575,42 @@ public class AutorView {
         Scene scene = new Scene(mainContainer);
         reporteStage.setScene(scene);
         reporteStage.show();
+    }
+  
+    
+    private void searchAutores(String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                loadAutores(); // Si no hay criterio, cargar todos
+                return;
+            }
+            
+            List<Autor> resultados = autorController.buscarAutores(criterio.trim());
+            autorData.clear();
+            autorData.addAll(resultados);
+            
+            if (resultados.isEmpty()) {
+                showAlert("Búsqueda", "No se encontraron autores con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+            }
+        } catch (Exception e) {
+            showAlert("Error", "Error al buscar autores: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+    
+    private void showCreateForm() {
+        // Crear un diálogo modal para el formulario de creación
+        Stage formStage = new Stage();
+        formStage.setTitle("Nuevo Autor");
+        formStage.setResizable(true);
+        formStage.setMinWidth(500);
+        formStage.setMinHeight(600);
+        
+        // Formulario con el nuevo diseño
+        VBox formPanel = createFormPanel();
+        
+        Scene scene = new Scene(formPanel, 500, 600);
+        formStage.setScene(scene);
+        formStage.show();
     }
     
     private void showAlert(String title, String message, Alert.AlertType type) {

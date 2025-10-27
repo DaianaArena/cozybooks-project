@@ -383,4 +383,13 @@ public class AutorController {
             throw new RuntimeException("Error al obtener total de autores: " + e.getMessage());
         }
     }
+    
+    // Método para JavaFX - busca autores
+    public List<Autor> buscarAutores(String criterio) {
+        try {
+            return autorRepository.buscarAutores(criterio);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar autores: " + e.getMessage());
+        }
+    }
 }

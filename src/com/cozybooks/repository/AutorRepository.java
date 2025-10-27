@@ -163,6 +163,33 @@ public class AutorRepository {
         
         return 0;
     }
+    
+    public List<Autor> buscarAutores(String criterio) throws SQLException {
+        String sql = "SELECT * FROM AUTOR WHERE nombre LIKE ? OR nacionalidad LIKE ?";
+        List<Autor> autores = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + criterio + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Autor autor = new Autor();
+                    autor.setIdAutor(rs.getInt("id_autor"));
+                    autor.setNombre(rs.getString("nombre"));
+                    autor.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate());
+                    autor.setNacionalidad(rs.getString("nacionalidad"));
+                    autor.setBiografia(rs.getString("biografia"));
+                    autores.add(autor);
+                }
+            }
+        }
+        
+        return autores;
+    }
 
     private Autor mapearResultSetAAutor(ResultSet rs) throws SQLException {
         Autor autor = new Autor();
