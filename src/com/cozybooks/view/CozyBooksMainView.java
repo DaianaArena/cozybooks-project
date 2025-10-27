@@ -6,6 +6,7 @@ import com.cozybooks.controller.LibroController;
 import com.cozybooks.controller.VentaController;
 import com.cozybooks.model.Autor;
 import com.cozybooks.model.Libro;
+import com.cozybooks.util.SvgMapper;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -138,7 +139,7 @@ public class CozyBooksMainView extends Application {
         Button notificationBtn = createIconButton("🔔", "#181818");
         
         // Icono de configuración
-        Button settingsBtn = createIconButton("⚙️", "#181818");
+        Button settingsBtn = createIconButton(SvgMapper.CONFIG_ICON, "#181818");
         
         // Usuario
         HBox userInfo = new HBox(8);
