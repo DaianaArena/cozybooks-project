@@ -4,6 +4,7 @@ import com.cozybooks.controller.VentaController;
 import com.cozybooks.controller.ClienteController;
 import com.cozybooks.model.*;
 import com.cozybooks.repository.LibroRepository;
+import com.cozybooks.util.SvgMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -60,33 +61,237 @@ public class VentaView {
     }
     
     private void setupUI() {
-        mainContainer = new VBox(20);
-        mainContainer.setPadding(new Insets(20));
-        mainContainer.setStyle("-fx-background-color: #ecf0f1;");
+        mainContainer = new VBox(0);
+        mainContainer.setStyle("-fx-background-color: #faf8d4;");
+        
+        // Header con título, buscador y botón crear
+        HBox header = createHeader();
+        
+        // Contenedor de la tabla
+        VBox tableContainer = createTableContainer();
+        
+        mainContainer.getChildren().addAll(header, tableContainer);
+    }
+    
+    private HBox createHeader() {
+        HBox header = new HBox(20);
+        header.setPadding(new Insets(20));
+        header.setStyle("-fx-background-color: #ede3e9; -fx-background-radius: 0 0 15 15;");
+        header.setAlignment(Pos.CENTER_LEFT);
         
         // Título
         Text title = new Text("Gestión de Ventas");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 28));
-        title.setStyle("-fx-fill: #2c3e50;");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        title.setStyle("-fx-fill: #181818;");
         
-        // Crear tabs para diferentes funcionalidades
-        TabPane tabPane = new TabPane();
+        // Espaciador
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        // Tab de listado de ventas
-        Tab ventasTab = new Tab("📋 Listado de Ventas");
-        ventasTab.setContent(createVentasListTab());
+        // Buscador
+        TextField searchField = new TextField();
+        searchField.setPromptText("Buscar por ID de venta, cliente o monto...");
+        searchField.setPrefWidth(300);
+        searchField.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;");
         
-        // Tab de nueva venta
-        Tab nuevaVentaTab = new Tab("🛒 Nueva Venta");
-        nuevaVentaTab.setContent(createNuevaVentaTab());
+        // Botón de búsqueda
+        Button searchButton = new Button(SvgMapper.SEARCH_ICON);
+        searchButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 12;");
+        searchButton.setOnAction(e -> searchVentas(searchField.getText()));
         
-        // Tab de búsqueda
-        Tab busquedaTab = new Tab("🔍 Búsqueda");
-        busquedaTab.setContent(createBusquedaTab());
+        // Botón crear venta
+        Button createButton = new Button("➕ NUEVA VENTA");
+        createButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-size: 14;");
+        createButton.setOnAction(e -> showCreateForm());
         
-        tabPane.getTabs().addAll(ventasTab, nuevaVentaTab, busquedaTab);
+        HBox searchContainer = new HBox(8);
+        searchContainer.getChildren().addAll(searchField, searchButton);
         
-        mainContainer.getChildren().addAll(title, tabPane);
+        header.getChildren().addAll(title, spacer, searchContainer, createButton);
+        
+        return header;
+    }
+    
+    private VBox createTableContainer() {
+        VBox container = new VBox(0);
+        container.setPadding(new Insets(20));
+        
+        // Tabla de ventas
+        ventaTable = new TableView<>();
+        ventaTable.setItems(ventaData);
+        ventaTable.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        ventaTable.setRowFactory(tv -> {
+            TableRow<Venta> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    Venta venta = row.getItem();
+                    editVenta(venta);
+                }
+            });
+            return row;
+        });
+        
+        // Configurar columnas
+        setupTableColumns();
+        
+        // Hacer que la tabla ocupe todo el ancho disponible
+        VBox.setVgrow(ventaTable, Priority.ALWAYS);
+        
+        container.getChildren().add(ventaTable);
+        
+        return container;
+    }
+    
+    private void setupTableColumns() {
+        // Limpiar columnas existentes
+        ventaTable.getColumns().clear();
+        
+        // ID
+        TableColumn<Venta, Integer> idColumn = new TableColumn<>("ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("idVenta"));
+        idColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Fecha
+        TableColumn<Venta, LocalDateTime> fechaColumn = new TableColumn<>("FECHA");
+        fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fecha"));
+        fechaColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Cliente ID
+        TableColumn<Venta, Integer> clienteColumn = new TableColumn<>("CLIENTE ID");
+        clienteColumn.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
+        clienteColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Monto
+        TableColumn<Venta, BigDecimal> montoColumn = new TableColumn<>("MONTO");
+        montoColumn.setCellValueFactory(new PropertyValueFactory<>("monto"));
+        montoColumn.setStyle("-fx-alignment: CENTER_RIGHT;");
+        montoColumn.setCellFactory(column -> new TableCell<Venta, BigDecimal>() {
+            @Override
+            protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("$%.2f", item));
+                }
+            }
+        });
+        
+        // Método de Pago
+        TableColumn<Venta, Venta.MetodoPago> metodoColumn = new TableColumn<>("MÉTODO PAGO");
+        metodoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
+        metodoColumn.setStyle("-fx-alignment: CENTER;");
+        metodoColumn.setCellFactory(column -> new TableCell<Venta, Venta.MetodoPago>() {
+            @Override
+            protected void updateItem(Venta.MetodoPago item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    String displayText = "";
+                    switch (item) {
+                        case EFECTIVO:
+                            displayText = "Efectivo";
+                            break;
+                        case TARJETA:
+                            displayText = "Tarjeta";
+                            break;
+                        case TRANSFERENCIA:
+                            displayText = "Transferencia";
+                            break;
+                    }
+                    setText(displayText);
+                }
+            }
+        });
+        
+        // Estado
+        TableColumn<Venta, Venta.EstadoVenta> estadoColumn = new TableColumn<>("ESTADO");
+        estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
+        estadoColumn.setStyle("-fx-alignment: CENTER;");
+        estadoColumn.setCellFactory(column -> new TableCell<Venta, Venta.EstadoVenta>() {
+            @Override
+            protected void updateItem(Venta.EstadoVenta item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    String displayText = "";
+                    String style = "";
+                    switch (item) {
+                        case PENDIENTE:
+                            displayText = "Pendiente";
+                            style = "-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 4 8;";
+                            break;
+                        case COMPLETADA:
+                            displayText = "Completada";
+                            style = "-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 4 8;";
+                            break;
+                        case CANCELADA:
+                            displayText = "Cancelada";
+                            style = "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 4 8;";
+                            break;
+                    }
+                    setText(displayText);
+                    setStyle(style);
+                }
+            }
+        });
+        
+        // Acciones
+        TableColumn<Venta, Void> actionsColumn = new TableColumn<>("ACCIONES");
+        actionsColumn.setStyle("-fx-alignment: CENTER;");
+        actionsColumn.setCellFactory(param -> new TableCell<Venta, Void>() {
+            private final Button editButton = new Button(SvgMapper.EDIT_ICON);
+            private final Button deleteButton = new Button(SvgMapper.DELETE_ICON);
+            private final Button ticketButton = new Button("🎫");
+            
+            {
+                editButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 6 12; -fx-font-size: 12;");
+                deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 6 12; -fx-font-size: 12;");
+                ticketButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 6 12; -fx-font-size: 12;");
+                
+                editButton.setOnAction(e -> {
+                    Venta venta = getTableView().getItems().get(getIndex());
+                    editVenta(venta);
+                });
+                
+                deleteButton.setOnAction(e -> {
+                    Venta venta = getTableView().getItems().get(getIndex());
+                    deleteVenta(venta);
+                });
+                
+                ticketButton.setOnAction(e -> {
+                    Venta venta = getTableView().getItems().get(getIndex());
+                    generarTicket(venta.getIdVenta());
+                });
+            }
+            
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox buttons = new HBox(5);
+                    buttons.setAlignment(Pos.CENTER);
+                    buttons.getChildren().addAll(editButton, deleteButton, ticketButton);
+                    setGraphic(buttons);
+                }
+            }
+        });
+        
+        ventaTable.getColumns().addAll(idColumn, fechaColumn, clienteColumn, montoColumn, metodoColumn, estadoColumn, actionsColumn);
+        
+        // Configurar ancho de columnas para que ocupen el 100%
+        idColumn.prefWidthProperty().bind(ventaTable.widthProperty().multiply(0.08));
+        fechaColumn.prefWidthProperty().bind(ventaTable.widthProperty().multiply(0.20));
+        clienteColumn.prefWidthProperty().bind(ventaTable.widthProperty().multiply(0.12));
+        montoColumn.prefWidthProperty().bind(ventaTable.widthProperty().multiply(0.15));
+        metodoColumn.prefWidthProperty().bind(ventaTable.widthProperty().multiply(0.15));
+        estadoColumn.prefWidthProperty().bind(ventaTable.widthProperty().multiply(0.15));
+        actionsColumn.prefWidthProperty().bind(ventaTable.widthProperty().multiply(0.15));
     }
     
     private VBox createVentasListTab() {
@@ -108,32 +313,8 @@ public class VentaView {
         ventaTable = new TableView<>();
         ventaTable.setItems(ventaData);
         
-        // Columnas de la tabla
-        TableColumn<Venta, Integer> idColumn = new TableColumn<>("ID");
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("idVenta"));
-        idColumn.setPrefWidth(80);
-        
-        TableColumn<Venta, LocalDateTime> fechaColumn = new TableColumn<>("Fecha");
-        fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fecha"));
-        fechaColumn.setPrefWidth(150);
-        
-        TableColumn<Venta, Integer> clienteColumn = new TableColumn<>("Cliente ID");
-        clienteColumn.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
-        clienteColumn.setPrefWidth(100);
-        
-        TableColumn<Venta, BigDecimal> montoColumn = new TableColumn<>("Monto");
-        montoColumn.setCellValueFactory(new PropertyValueFactory<>("monto"));
-        montoColumn.setPrefWidth(100);
-        
-        TableColumn<Venta, Venta.MetodoPago> metodoColumn = new TableColumn<>("Método Pago");
-        metodoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
-        metodoColumn.setPrefWidth(120);
-        
-        TableColumn<Venta, Venta.EstadoVenta> estadoColumn = new TableColumn<>("Estado");
-        estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
-        estadoColumn.setPrefWidth(100);
-        
-        ventaTable.getColumns().addAll(idColumn, fechaColumn, clienteColumn, montoColumn, metodoColumn, estadoColumn);
+        // Configurar columnas
+        setupTableColumns();
         
         // Botones de acción de fila
         TableColumn<Venta, Void> actionsColumn = new TableColumn<>("Acciones");
@@ -803,6 +984,231 @@ public class VentaView {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    private void searchVentas(String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                loadVentas(); // Si no hay criterio, cargar todos
+                return;
+            }
+            
+            List<Venta> resultados = ventaController.buscarVentas(criterio.trim());
+            ventaData.clear();
+            ventaData.addAll(resultados);
+            
+            if (resultados.isEmpty()) {
+                showAlert("Búsqueda", "No se encontraron ventas con el criterio: " + criterio, Alert.AlertType.INFORMATION);
+            }
+        } catch (Exception e) {
+            showAlert("Error", "Error al buscar ventas: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+    
+    private void showCreateForm() {
+        // Crear un diálogo modal para el formulario de nueva venta
+        Stage formStage = new Stage();
+        formStage.setTitle("Nueva Venta");
+        formStage.setResizable(true);
+        formStage.setMinWidth(800);
+        formStage.setMinHeight(600);
+        
+        // Formulario con el nuevo diseño
+        VBox formPanel = createNuevaVentaForm();
+        
+        Scene scene = new Scene(formPanel, 800, 600);
+        formStage.setScene(scene);
+        formStage.show();
+    }
+    
+    private VBox createNuevaVentaForm() {
+        VBox panel = new VBox(20);
+        panel.setPadding(new Insets(30));
+        panel.setStyle("-fx-background-color: #faf8d4; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 3);");
+        
+        // Header del formulario
+        HBox headerContainer = new HBox();
+        headerContainer.setAlignment(Pos.CENTER_LEFT);
+        
+        Text formTitle = new Text("Nueva Venta");
+        formTitle.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        formTitle.setStyle("-fx-fill: #181818;");
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        // Botón cerrar
+        Button closeButton = new Button("✕");
+        closeButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 12; -fx-font-size: 14; -fx-font-weight: bold;");
+        closeButton.setOnAction(e -> {
+            Stage stage = (Stage) closeButton.getScene().getWindow();
+            stage.close();
+        });
+        
+        headerContainer.getChildren().addAll(formTitle, spacer, closeButton);
+        
+        // Contenido del formulario
+        VBox formContainer = new VBox(15);
+        formContainer.setPadding(new Insets(20));
+        formContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 3, 0, 0, 1);");
+        
+        // Información del cliente
+        HBox clienteBox = new HBox(10);
+        clienteBox.setAlignment(Pos.CENTER_LEFT);
+        
+        Label clienteLabel = createFormLabel("ID Cliente:");
+        clienteIdField = createFormTextField("Ingrese ID del cliente");
+        clienteIdField.setPrefWidth(150);
+        
+        Button buscarClienteButton = new Button("🔍 Buscar");
+        buscarClienteButton.setStyle("-fx-background-color: #9f84bd; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16;");
+        buscarClienteButton.setOnAction(e -> buscarCliente());
+        
+        clienteBox.getChildren().addAll(clienteLabel, clienteIdField, buscarClienteButton);
+        
+        // Agregar libros a la venta
+        HBox libroBox = new HBox(10);
+        libroBox.setAlignment(Pos.CENTER_LEFT);
+        
+        Label libroLabel = createFormLabel("ID Libro:");
+        libroIdField = createFormTextField("Ingrese ID del libro");
+        libroIdField.setPrefWidth(150);
+        
+        Label cantidadLabel = createFormLabel("Cantidad:");
+        cantidadField = createFormTextField("Cantidad");
+        cantidadField.setPrefWidth(100);
+        
+        agregarLibroButton = new Button("➕ Agregar");
+        agregarLibroButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16;");
+        agregarLibroButton.setOnAction(e -> agregarLibro());
+        
+        libroBox.getChildren().addAll(libroLabel, libroIdField, cantidadLabel, cantidadField, agregarLibroButton);
+        
+        // Tabla de detalles de la venta
+        Text detalleTitle = new Text("Detalles de la Venta");
+        detalleTitle.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        detalleTitle.setStyle("-fx-fill: #181818;");
+        
+        detalleTable = new TableView<>();
+        detalleTable.setItems(detalleData);
+        detalleTable.setStyle("-fx-background-color: #fafafa; -fx-background-radius: 8;");
+        detalleTable.setPrefHeight(200);
+        
+        // Configurar columnas de la tabla de detalles
+        TableColumn<DetalleVenta, Integer> libroIdColumn = new TableColumn<>("ID Libro");
+        libroIdColumn.setCellValueFactory(new PropertyValueFactory<>("idLibro"));
+        libroIdColumn.setStyle("-fx-alignment: CENTER;");
+        libroIdColumn.prefWidthProperty().bind(detalleTable.widthProperty().multiply(0.15));
+        
+        TableColumn<DetalleVenta, Integer> cantidadColumn = new TableColumn<>("Cantidad");
+        cantidadColumn.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
+        cantidadColumn.setStyle("-fx-alignment: CENTER;");
+        cantidadColumn.prefWidthProperty().bind(detalleTable.widthProperty().multiply(0.15));
+        
+        TableColumn<DetalleVenta, BigDecimal> precioColumn = new TableColumn<>("Precio Unit.");
+        precioColumn.setCellValueFactory(new PropertyValueFactory<>("precioUnitario"));
+        precioColumn.setStyle("-fx-alignment: CENTER_RIGHT;");
+        precioColumn.prefWidthProperty().bind(detalleTable.widthProperty().multiply(0.25));
+        precioColumn.setCellFactory(column -> new TableCell<DetalleVenta, BigDecimal>() {
+            @Override
+            protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("$%.2f", item));
+                }
+            }
+        });
+        
+        TableColumn<DetalleVenta, BigDecimal> subtotalColumn = new TableColumn<>("Subtotal");
+        subtotalColumn.setCellValueFactory(new PropertyValueFactory<>("subtotal"));
+        subtotalColumn.setStyle("-fx-alignment: CENTER_RIGHT;");
+        subtotalColumn.prefWidthProperty().bind(detalleTable.widthProperty().multiply(0.25));
+        subtotalColumn.setCellFactory(column -> new TableCell<DetalleVenta, BigDecimal>() {
+            @Override
+            protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("$%.2f", item));
+                }
+            }
+        });
+        
+        // Columna de acciones para eliminar items
+        TableColumn<DetalleVenta, Void> accionesColumn = new TableColumn<>("Acciones");
+        accionesColumn.setStyle("-fx-alignment: CENTER;");
+        accionesColumn.prefWidthProperty().bind(detalleTable.widthProperty().multiply(0.20));
+        accionesColumn.setCellFactory(param -> new TableCell<DetalleVenta, Void>() {
+            private final Button deleteButton = new Button(SvgMapper.DELETE_ICON);
+            
+            {
+                deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 4 8; -fx-font-size: 12;");
+                deleteButton.setOnAction(e -> {
+                    DetalleVenta detalle = getTableView().getItems().get(getIndex());
+                    detalleData.remove(detalle);
+                    // También remover de la lista de libros
+                    librosVenta.removeIf(libro -> libro.getIdLibro() == detalle.getIdLibro());
+                });
+            }
+            
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(deleteButton);
+                }
+            }
+        });
+        
+        detalleTable.getColumns().addAll(libroIdColumn, cantidadColumn, precioColumn, subtotalColumn, accionesColumn);
+        
+        // Botones finales
+        HBox buttonContainer = new HBox(15);
+        buttonContainer.setAlignment(Pos.CENTER);
+        buttonContainer.setPadding(new Insets(20, 0, 0, 0));
+        
+        finalizarVentaButton = new Button("✅ FINALIZAR VENTA");
+        finalizarVentaButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 14;");
+        finalizarVentaButton.setOnAction(e -> finalizarVenta());
+        
+        cancelarVentaButton = new Button("❌ CANCELAR VENTA");
+        cancelarVentaButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 14;");
+        cancelarVentaButton.setOnAction(e -> cancelarVenta());
+        
+        buttonContainer.getChildren().addAll(finalizarVentaButton, cancelarVentaButton);
+        
+        formContainer.getChildren().addAll(
+            clienteBox,
+            libroBox,
+            detalleTitle,
+            detalleTable,
+            buttonContainer
+        );
+        
+        panel.getChildren().addAll(headerContainer, formContainer);
+        
+        return panel;
+    }
+    
+    // Métodos helper para crear elementos del formulario con estilo del dashboard
+    private Label createFormLabel(String text) {
+        Label label = new Label(text);
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        label.setStyle("-fx-text-fill: #181818; -fx-padding: 0 0 5 0;");
+        return label;
+    }
+    
+    private TextField createFormTextField(String promptText) {
+        TextField field = new TextField();
+        field.setPromptText(promptText);
+        field.setStyle("-fx-background-color: #fafafa; -fx-border-color: #ebdccb; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 12; -fx-font-size: 14;");
+        field.setPrefHeight(40);
+        return field;
     }
     
     public VBox getView() {
