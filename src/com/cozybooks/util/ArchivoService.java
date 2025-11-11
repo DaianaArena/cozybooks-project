@@ -14,12 +14,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Servicio para manejo de archivos, especialmente para generar tickets de venta
+ * Servicio para manejo de archivos, especialmente para generar tickets de venta.
+ * Genera tickets en formato TXT.
+ * Mantiene métodos estáticos para compatibilidad con la arquitectura actual.
+ * 
+ * Para usar como implementación de GeneradorTicket, usar ArchivoService.getInstance().
  */
 public class ArchivoService {
     private static final String TICKETS_DIR = "tickets";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-
+    
+    // ========== MÉTODOS ESTÁTICOS (ARQUITECTURA ACTUAL) ==========
+    
     /**
      * Genera un ticket de venta en formato .txt
      * @param venta la venta para la cual generar el ticket
@@ -102,5 +108,37 @@ public class ArchivoService {
             Files.createDirectories(ticketsPath);
             System.out.println("Directorio de tickets creado: " + ticketsPath.toString());
         }
+    }
+    
+    // ========== IMPLEMENTACIÓN DE LA INTERFAZ ==========
+    // Clase interna que implementa la interfaz usando los métodos estáticos
+    
+    /**
+     * Clase interna que implementa GeneradorTicket usando los métodos estáticos.
+     * Permite usar ArchivoService como implementación de la interfaz.
+     */
+    public static class GeneradorTicketImpl implements GeneradorTicket {
+        @Override
+        public void generarTicket(Venta venta, Cliente cliente, List<DetalleVenta> detalles, List<Libro> libros) throws IOException {
+            ArchivoService.generarTicket(venta, cliente, detalles, libros);
+        }
+
+        @Override
+        public boolean directorioTicketsExiste() {
+            return ArchivoService.directorioTicketsExiste();
+        }
+
+        @Override
+        public void crearDirectorioTickets() throws IOException {
+            ArchivoService.crearDirectorioTickets();
+        }
+    }
+    
+    /**
+     * Obtiene una instancia que implementa la interfaz GeneradorTicket
+     * @return instancia de GeneradorTicket que usa ArchivoService
+     */
+    public static GeneradorTicket getInstance() {
+        return new GeneradorTicketImpl();
     }
 }
